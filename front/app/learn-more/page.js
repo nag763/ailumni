@@ -33,7 +33,7 @@ export default function LearnMore() {
                 Learn from Existing Quizzes
               </h3>
               <p className="text-gray-600">
-                Access a vast library of pre-made quizzes on various subjects. You can also upload quizzes you've used before to get a new, randomized version that keeps you on your toes.
+                Access a vast library of pre-made quizzes on various subjects. You can also upload quizzes you&apos;ve used before to get a new, randomized version that keeps you on your toes.
               </p>
             </div>
             <div className="p-8 bg-gray-100 rounded-lg shadow-sm">
@@ -41,7 +41,7 @@ export default function LearnMore() {
                 Focus on Your Mistakes
               </h3>
               <p className="text-gray-600">
-                Ailumni's intelligent algorithm identifies the questions you struggle with the most. It then creates personalized quizzes that help you focus on your weak spots, turning them into strengths.
+                Ailumni&apos;s intelligent algorithm identifies the questions you struggle with the most. It then creates personalized quizzes that help you focus on your weak spots, turning them into strengths.
               </p>
             </div>
             <div className="p-8 bg-gray-100 rounded-lg shadow-sm">
@@ -49,7 +49,7 @@ export default function LearnMore() {
                 Track Your Progress
               </h3>
               <p className="text-gray-600">
-                Visualize your learning journey with our detailed analytics. See how you're improving over time and identify which topics require more of your attention.
+                Visualize your learning journey with our detailed analytics. See how you&apos;re improving over time and identify which topics require more of your attention.
               </p>
             </div>
           </div>
