@@ -1,4 +1,4 @@
-name: Deploy to AWS
+name: Deploy Next app to AWS
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'front/**'
+      - '.github/workflows/deploy_front.yml'
       
 permissions:
   id-token: write
