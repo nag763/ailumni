@@ -37,7 +37,7 @@ resource "aws_cognito_identity_pool" "main" {
   allow_unauthenticated_identities = false
 
   cognito_identity_providers {
-    client_id = aws_cognito_user_pool_client.main.id
+    client_id     = aws_cognito_user_pool_client.main.id
     provider_name = "cognito-idp.${var.aws_region}.amazonaws.com/${aws_cognito_user_pool.main.id}"
   }
 
