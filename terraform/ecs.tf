@@ -1,5 +1,7 @@
 resource "aws_ecs_cluster" "main" {
   name = "${var.project_name}-cluster"
+
+  tags = var.tags
 }
 
 resource "aws_ecs_task_definition" "main" {
@@ -25,6 +27,8 @@ resource "aws_ecs_task_definition" "main" {
       ]
     }
   ])
+
+  tags = var.tags
 }
 
 resource "aws_ecs_service" "main" {
@@ -51,6 +55,8 @@ resource "aws_ecs_service" "main" {
   }
 
   depends_on = [aws_lb_listener.http]
+
+  tags = var.tags
 }
 
 resource "aws_iam_role" "ecs_task_execution_role" {
@@ -68,6 +74,8 @@ resource "aws_iam_role" "ecs_task_execution_role" {
       }
     ]
   })
+
+  tags = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {

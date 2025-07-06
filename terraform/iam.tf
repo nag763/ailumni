@@ -26,6 +26,8 @@ resource "aws_iam_openid_connect_provider" "github" {
 resource "aws_iam_role" "github_actions" {
   name               = "${var.project_name}-github-actions-role"
   assume_role_policy = data.aws_iam_policy_document.github_assume_role.json
+
+  tags = var.tags
 }
 
 resource "aws_iam_policy" "github_actions" {
@@ -69,6 +71,8 @@ resource "aws_iam_policy" "github_actions" {
       }
     ]
   })
+
+  tags = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "github_actions" {

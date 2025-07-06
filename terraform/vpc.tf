@@ -3,9 +3,12 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   enable_dns_hostnames = true
 
-  tags = {
-    Name = "${var.project_name}-vpc"
-  }
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.project_name}-vpc"
+    }
+  )
 }
 
 resource "aws_subnet" "public_a" {
@@ -14,9 +17,12 @@ resource "aws_subnet" "public_a" {
   availability_zone = "${var.aws_region}a"
   map_public_ip_on_launch = true
 
-  tags = {
-    Name = "${var.project_name}-public-subnet-a"
-  }
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.project_name}-public-subnet-a"
+    }
+  )
 }
 
 resource "aws_subnet" "public_b" {
@@ -25,17 +31,23 @@ resource "aws_subnet" "public_b" {
   availability_zone = "${var.aws_region}b"
   map_public_ip_on_launch = true
 
-  tags = {
-    Name = "${var.project_name}-public-subnet-b"
-  }
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.project_name}-public-subnet-b"
+    }
+  )
 }
 
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
-  tags = {
-    Name = "${var.project_name}-igw"
-  }
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.project_name}-igw"
+    }
+  )
 }
 
 resource "aws_route_table" "public" {
@@ -46,9 +58,12 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.main.id
   }
 
-  tags = {
-    Name = "${var.project_name}-public-rt"
-  }
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.project_name}-public-rt"
+    }
+  )
 }
 
 resource "aws_route_table_association" "public_a" {

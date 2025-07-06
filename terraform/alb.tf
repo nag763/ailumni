@@ -5,9 +5,12 @@ resource "aws_lb" "main" {
   security_groups    = [aws_security_group.alb.id]
   subnets            = [aws_subnet.public_a.id, aws_subnet.public_b.id]
 
-  tags = {
-    Name = "${var.project_name}-alb"
-  }
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.project_name}-alb"
+    }
+  )
 }
 
 resource "aws_lb_target_group" "main" {
@@ -26,6 +29,8 @@ resource "aws_lb_target_group" "main" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
   }
+
+  tags = var.tags
 }
 
 resource "aws_lb_listener" "http" {
@@ -37,4 +42,6 @@ resource "aws_lb_listener" "http" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.main.arn
   }
+
+  tags = var.tags
 }
