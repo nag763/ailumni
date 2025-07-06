@@ -37,7 +37,13 @@ resource "aws_iam_policy" "github_actions" {
     Statement = [
       {
         Action = [
-          "ecr:GetAuthorizationToken",
+          "ecr:GetAuthorizationToken"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+      {
+        Action = [
           "ecr:BatchCheckLayerAvailability",
           "ecr:GetDownloadUrlForLayer",
           "ecr:GetRepositoryPolicy",
