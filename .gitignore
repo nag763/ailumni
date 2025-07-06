@@ -72,3 +72,6 @@ terraform.rc
 
 # Ignore any local backup files
 *.backup
+
+.env
+.env.local

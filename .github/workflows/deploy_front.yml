@@ -46,6 +46,9 @@ jobs:
           context: ./front
           push: true
           tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:latest
+          build-args:
+            NEXT_PUBLIC_USER_POOL_ID: ${{ secrets.NEXT_PUBLIC_USER_POOL_ID }}
+            NEXT_PUBLIC_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_CLIENT_ID }}
 
   deploy:
     name: Deploy to ECS
