@@ -21,3 +21,9 @@ variable "container_port" {
   type        = number
   default     = 3000
 }
+
+variable "github_repository" {
+  description = "The GitHub repository (e.g., your-username/your-repo) to grant access to."
+  type        = string
+  default     = "nag763/ailumni"
+}
