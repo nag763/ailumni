@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CognitoUserPool, AuthenticationDetails, CognitoUser } from "amazon-cognito-identity-js";
 import cognitoConfig from "../../cognito-config";
+import { toast } from 'react-toastify';
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -11,13 +13,13 @@ export default function Login() {
   const [verificationCode, setVerificationCode] = useState("");
   const [isSignUp, setIsSignUp] = useState(false);
   const [isConfirmingSignUp, setIsConfirmingSignUp] = useState(false);
-  const [message, setMessage] = useState("");
+  const router = useRouter();
 
   const userPool = new CognitoUserPool(cognitoConfig);
 
   const handleLogin = (event) => {
     event.preventDefault();
-    setMessage("");
+    
 
     const authenticationDetails = new AuthenticationDetails({
       Username: username,
@@ -31,18 +33,18 @@ export default function Login() {
 
     cognitoUser.authenticateUser(authenticationDetails, {
       onSuccess: (result) => {
-        setMessage("Login successful!");
-        // You can redirect the user here or store tokens
+        toast.success("Login successful!");
+        router.push('/auth');
       },
       onFailure: (err) => {
-        setMessage(`Login failed: ${err.message}`);
+        toast.error(`Login failed: ${err.message}`);
       },
     });
   };
 
   const handleSignUp = (event) => {
     event.preventDefault();
-    setMessage("");
+    
 
     const attributeList = [];
     attributeList.push({
@@ -52,17 +54,17 @@ export default function Login() {
 
     userPool.signUp(username, password, attributeList, null, (err, result) => {
       if (err) {
-        setMessage(`Sign up failed: ${err.message}`);
+        toast.error(`Sign up failed: ${err.message}`);
         return;
       }
-      setMessage("Sign up successful! Please check your email for the verification code.");
+      toast.success("Sign up successful! Please check your email for the verification code.");
       setIsConfirmingSignUp(true);
     });
   };
 
   const handleConfirmSignUp = (event) => {
     event.preventDefault();
-    setMessage("");
+    
 
     const cognitoUser = new CognitoUser({
       Username: username,
@@ -71,12 +73,13 @@ export default function Login() {
 
     cognitoUser.confirmRegistration(verificationCode, true, (err, result) => {
       if (err) {
-        setMessage(`Verification failed: ${err.message}`);
+        toast.error(`Verification failed: ${err.message}`);
         return;
       }
-      setMessage("Account confirmed successfully! You can now log in.");
+      toast.success("Account confirmed successfully! You can now log in.");
       setIsConfirmingSignUp(false);
       setIsSignUp(false); // Switch back to login form
+      router.push('/auth');
     });
   };
 
@@ -172,7 +175,7 @@ export default function Login() {
             </button>
           )}
         </div>
-        {message && <p className="text-center text-red-500 text-xs italic mt-4">{message}</p>}
+        
       </form>
     </div>
   );
