@@ -11,13 +11,17 @@ export default function AuthGuard({ children }) {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      toast.warn('You need to authenticate in order to access this page')
+      toast.warn('You need to authenticate in order to access this page');
       router.push('/');
     }
   }, [isAuthenticated, isLoading, router]);
 
   if (isLoading) {
-    return <div className="flex flex-col min-h-screen bg-gray-50 items-center justify-center">Loading authentication...</div>;
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
+        Loading authentication...
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

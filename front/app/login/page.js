@@ -1,21 +1,21 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   CognitoUserPool,
   AuthenticationDetails,
   CognitoUser,
-} from "amazon-cognito-identity-js";
-import cognitoConfig from "../../cognito-config";
-import { toast } from "react-toastify";
-import RedirectIfAuthenticated from "@/components/RedirectIfAuthenticated";
+} from 'amazon-cognito-identity-js';
+import cognitoConfig from '../../cognito-config';
+import { toast } from 'react-toastify';
+import RedirectIfAuthenticated from '@/components/RedirectIfAuthenticated';
 
 export default function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const [isConfirmingSignUp, setIsConfirmingSignUp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -39,14 +39,14 @@ export default function Login() {
 
     cognitoUser.authenticateUser(authenticationDetails, {
       onSuccess: (result) => {
-        toast.success("Login successful!");
+        toast.success('Login successful!');
         setIsSubmitting(false);
-        router.push("/auth");
+        router.push('/auth');
       },
       onFailure: (err) => {
         toast.error(`Login failed: ${err.message}`);
         setIsSubmitting(false);
-        setPassword("");
+        setPassword('');
       },
     });
   };
@@ -57,7 +57,7 @@ export default function Login() {
 
     const attributeList = [];
     attributeList.push({
-      Name: "email",
+      Name: 'email',
       Value: email,
     });
 
@@ -68,7 +68,7 @@ export default function Login() {
         return;
       }
       toast.success(
-        "Sign up successful! Please check your email for the verification code."
+        'Sign up successful! Please check your email for the verification code.',
       );
       setIsConfirmingSignUp(true);
       setIsSubmitting(false);
@@ -90,48 +90,48 @@ export default function Login() {
         setIsSubmitting(false);
         return;
       }
-      toast.success("Account confirmed successfully! You can now log in.");
+      toast.success('Account confirmed successfully! You can now log in.');
       setIsConfirmingSignUp(false);
       setIsSignUp(false); // Switch back to login form
-      router.push("/auth");
+      router.push('/auth');
       setIsSubmitting(false);
     });
   };
 
   return (
     <>
-    <RedirectIfAuthenticated/>
-      <div className="flex flex-col min-h-screen bg-gray-50 items-center justify-center">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8">
+      <RedirectIfAuthenticated />
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
+        <h2 className="mb-8 text-3xl font-bold text-gray-800">
           {isConfirmingSignUp
-            ? "Confirm Your Account"
+            ? 'Confirm Your Account'
             : isSignUp
-            ? "Sign Up for Ailumni"
-            : "Login to Ailumni"}
+              ? 'Sign Up for Ailumni'
+              : 'Login to Ailumni'}
         </h2>
         <form
           onSubmit={
             isConfirmingSignUp
               ? handleConfirmSignUp
               : isSignUp
-              ? handleSignUp
-              : handleLogin
+                ? handleSignUp
+                : handleLogin
           }
-          className="bg-white p-8 rounded-lg shadow-md w-96"
+          className="w-96 rounded-lg bg-white p-8 shadow-md"
         >
           {!isConfirmingSignUp && (
             <>
               <div className="mb-4">
                 <label
                   htmlFor="username"
-                  className="block text-gray-700 text-sm font-bold mb-2"
+                  className="mb-2 block text-sm font-bold text-gray-700"
                 >
                   Username:
                 </label>
                 <input
                   type="text"
                   id="username"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  className="focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
@@ -142,14 +142,14 @@ export default function Login() {
                 <div className="mb-4">
                   <label
                     htmlFor="email"
-                    className="block text-gray-700 text-sm font-bold mb-2"
+                    className="mb-2 block text-sm font-bold text-gray-700"
                   >
                     Email:
                   </label>
                   <input
                     type="email"
                     id="email"
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    className="focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -160,14 +160,14 @@ export default function Login() {
               <div className="mb-6">
                 <label
                   htmlFor="password"
-                  className="block text-gray-700 text-sm font-bold mb-2"
+                  className="mb-2 block text-sm font-bold text-gray-700"
                 >
                   Password:
                 </label>
                 <input
                   type="password"
                   id="password"
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                  className="focus:shadow-outline mb-3 w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -181,14 +181,14 @@ export default function Login() {
             <div className="mb-4">
               <label
                 htmlFor="verificationCode"
-                className="block text-gray-700 text-sm font-bold mb-2"
+                className="mb-2 block text-sm font-bold text-gray-700"
               >
                 Verification Code:
               </label>
               <input
                 type="text"
                 id="verificationCode"
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                className="focus:shadow-outline w-full appearance-none rounded border px-3 py-2 leading-tight text-gray-700 shadow focus:outline-none"
                 value={verificationCode}
                 onChange={(e) => setVerificationCode(e.target.value)}
                 required
@@ -200,34 +200,50 @@ export default function Login() {
           <div className="flex items-center justify-between">
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              className="focus:shadow-outline rounded bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none disabled:bg-blue-400"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <div className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="mr-3 -ml-1 h-5 w-5 animate-spin text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Processing...
                 </div>
+              ) : isConfirmingSignUp ? (
+                'Confirm Sign Up'
+              ) : isSignUp ? (
+                'Sign Up'
               ) : (
-                isConfirmingSignUp
-                  ? "Confirm Sign Up"
-                  : isSignUp
-                  ? "Sign Up"
-                  : "Sign In"
+                'Sign In'
               )}
             </button>
             {!isConfirmingSignUp && (
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
-                className="inline-block align-baseline font-bold text-sm text-blue-600 hover:text-blue-800"
+                className="inline-block align-baseline text-sm font-bold text-blue-600 hover:text-blue-800"
                 disabled={isSubmitting}
               >
                 {isSignUp
-                  ? "Already have an account? Sign In"
+                  ? 'Already have an account? Sign In'
                   : "Don't have an account? Sign Up"}
               </button>
             )}

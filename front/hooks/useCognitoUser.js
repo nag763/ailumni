@@ -18,7 +18,7 @@ export function useCognitoUser() {
         if (session) {
           cognitoUser.getUserAttributes((err, attributes) => {
             if (err) {
-              console.error("Error getting user attributes:", err);
+              console.error('Error getting user attributes:', err);
               setUser(null);
               setIsAuthenticated(false);
             } else {
