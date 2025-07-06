@@ -8,9 +8,11 @@ export default function LearnMore() {
         <Link href="/">
           <h1 className="text-3xl font-bold text-gray-800">Ailumni</h1>
         </Link>
-        <button className="px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all transform hover:scale-105 active:scale-95">
-          Login with Google
-        </button>
+        <Link href="/login">
+          <button className="px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all transform hover:scale-105 active:scale-95">
+            Login
+          </button>
+        </Link>
       </header>
 
       <main className="flex flex-col items-center flex-1 p-8 py-12 bg-white">
