@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'lambda/retrieve-user/**'
+      - 'lambda/create-entry/**'
       - '.github/workflows/deploy_lambda.yml'
 
 permissions:
@@ -17,8 +18,8 @@ env:
   LAMBDA_FUNCTION_NAME: ailumni-front-retrieve-user
 
 jobs:
-  build-and-deploy:
-    name: Build and Deploy Lambda
+  build-and-deploy-retrieve-user:
+    name: Build and Deploy Retrieve User Lambda
     runs-on: ubuntu-latest
 
     steps:
@@ -44,4 +45,33 @@ jobs:
 
       - name: Deploy Lambda function
         run: |
-          aws lambda update-function-code --function-name ${{ env.LAMBDA_FUNCTION_NAME }} --zip-file fileb://lambda/retrieve-user/retrieve-user.zip --region ${{ env.AWS_REGION }}
+          aws lambda update-function-code --function-name ailumni-front-retrieve-user --zip-file fileb://lambda/retrieve-user/retrieve-user.zip --region ${{ env.AWS_REGION }}
+
+  build-and-deploy-create-entry:
+    name: Build and Deploy Create Entry Lambda
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install dependencies and build
+        working-directory: ./lambda/create-entry
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy Lambda function
+        run: |
+          aws lambda update-function-code --function-name ailumni-front-create-entry --zip-file fileb://lambda/create-entry/create-entry.zip --region ${{ env.AWS_REGION }}
