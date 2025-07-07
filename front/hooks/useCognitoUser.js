@@ -6,6 +6,7 @@ import cognitoConfig from '../cognito-config';
 
 export function useCognitoUser() {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -16,10 +17,12 @@ export function useCognitoUser() {
     if (cognitoUser) {
       cognitoUser.getSession((err, session) => {
         if (session) {
+          setToken(session.getIdToken().getJwtToken());
           cognitoUser.getUserAttributes((err, attributes) => {
             if (err) {
               console.error('Error getting user attributes:', err);
               setUser(null);
+              setToken(null);
               setIsAuthenticated(false);
             } else {
               const userData = attributes.reduce((acc, attr) => {
@@ -33,12 +36,14 @@ export function useCognitoUser() {
           });
         } else {
           setUser(null);
+          setToken(null);
           setIsAuthenticated(false);
           setIsLoading(false);
         }
       });
     } else {
       setUser(null);
+      setToken(null);
       setIsAuthenticated(false);
       setIsLoading(false);
     }
@@ -50,9 +55,10 @@ export function useCognitoUser() {
     if (cognitoUser) {
       cognitoUser.signOut();
       setUser(null);
+      setToken(null);
       setIsAuthenticated(false);
     }
   };
 
-  return { user, isLoading, isAuthenticated, signOut };
+  return { user, token, isLoading, isAuthenticated, signOut };
 }

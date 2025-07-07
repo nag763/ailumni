@@ -1,13 +1,32 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import AuthGuard from '../../components/AuthGuard';
 import { useCognitoUser } from '../../hooks/useCognitoUser';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
-  const { user, isLoading, isAuthenticated, signOut } = useCognitoUser();
+  const { user, token, isLoading, isAuthenticated, signOut } = useCognitoUser();
+  const [userData, setUserData] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    console.log({ isAuthenticated, token });
+    if (isAuthenticated && token) {
+      fetch(process.env.NEXT_PUBLIC_API_ENDPOINT + 'api/v1/user', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => setUserData(data))
+        .catch((err) => {
+          console.error(err);
+          toast.error('Failed to fetch user data.');
+        });
+    }
+  }, [isAuthenticated, token]);
 
   const handleLogout = () => {
     signOut();
@@ -33,13 +52,17 @@ export default function AuthPage() {
           <h3 className="mb-4 text-xl font-semibold text-gray-700">
             Your Information:
           </h3>
-          <ul className="list-inside list-disc">
-            {Object.entries(user).map(([key, value]) => (
-              <li key={key} className="text-gray-600">
-                <strong>{key}:</strong> {value}
-              </li>
-            ))}
-          </ul>
+          {userData ? (
+            <ul className="list-inside list-disc">
+              {Object.entries(userData).map(([key, value]) => (
+                <li key={key} className="text-gray-600">
+                  <strong>{key}:</strong> {value}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Loading user data...</p>
+          )}
           <button
             onClick={handleLogout}
             className="focus:shadow-outline mt-8 rounded bg-red-600 px-4 py-2 font-bold text-white hover:bg-red-700 focus:outline-none"

@@ -68,6 +68,13 @@ resource "aws_iam_policy" "github_actions" {
         ]
         Effect   = "Allow"
         Resource = aws_ecs_service.main.id
+      },
+      {
+        Action = [
+          "lambda:UpdateFunctionCode"
+        ]
+        Effect   = "Allow"
+        Resource = aws_lambda_function.retrieve_user.arn
       }
     ]
   })

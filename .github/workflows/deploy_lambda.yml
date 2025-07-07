@@ -1,0 +1,47 @@
+name: Deploy Lambda function to AWS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'lambda/retrieve-user/**'
+      - '.github/workflows/deploy_lambda.yml'
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-3
+  LAMBDA_FUNCTION_NAME: ailumni-front-retrieve-user
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Lambda
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install dependencies and build
+        working-directory: ./lambda/retrieve-user
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy Lambda function
+        run: |
+          aws lambda update-function-code --function-name ${{ env.LAMBDA_FUNCTION_NAME }} --zip-file fileb://lambda/retrieve-user/retrieve-user.zip --region ${{ env.AWS_REGION }}

@@ -35,3 +35,9 @@ variable "tags" {
     app = "ailumni"
   }
 }
+
+variable "lambda_zip_path" {
+  description = "The path to the lambda zip file."
+  type        = string
+  default     = "../lambda/retrieve-user/retrieve-user.zip"
+}

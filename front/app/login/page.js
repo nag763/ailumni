@@ -93,7 +93,7 @@ export default function Login() {
       toast.success('Account confirmed successfully! You can now log in.');
       setIsConfirmingSignUp(false);
       setIsSignUp(false); // Switch back to login form
-      router.push('/auth');
+      router.push('/login');
       setIsSubmitting(false);
     });
   };
