@@ -1,7 +1,7 @@
 resource "aws_dynamodb_table" "main" {
-  name           = "${var.project_name}-table"
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "user_sub"
+  name         = "${var.project_name}-table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "user_sub"
 
   attribute {
     name = "user_sub"
