@@ -75,6 +75,13 @@ resource "aws_iam_policy" "github_actions" {
         ]
         Effect   = "Allow"
         Resource = aws_lambda_function.retrieve_user.arn
+      },
+      {
+        Action = [
+          "lambda:UpdateFunctionCode"
+        ]
+        Effect   = "Allow"
+        Resource = aws_lambda_function.create_entry.arn
       }
     ]
   })
