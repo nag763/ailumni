@@ -41,6 +41,11 @@ export default function AuthPage() {
       return;
     }
 
+    const endpoint = process.env.NEXT_PUBLIC_API_ENDPOINT;
+    if(!endpoint) {
+      throw new Error("NEXT_PUBLIC_API_ENDPOINT is not defined")
+    }
+
     fetch(process.env.NEXT_PUBLIC_API_ENDPOINT + 'api/v1/user/entries', {
       method: 'POST',
       headers: {
