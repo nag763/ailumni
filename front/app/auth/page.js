@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import AuthGuard from '../../components/AuthGuard';
 import { useCognitoUser } from '../../hooks/useCognitoUser';
-import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-import fetchAPI from '../../lib/fetchAPI';
+import { handleLogout, handleCreateEntry, fetchUserData } from '../../actions';
 
 export default function AuthPage() {
   const { user, token, isLoading, isAuthenticated, signOut } = useCognitoUser();
@@ -15,35 +14,16 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (isAuthenticated && token) {
-      fetchAPI('GET', 'api/v1/user/entries', null, token)
-        .then((data) => setUserData(data))
-        .catch((err) => {
-          console.error(err);
-        });
+      fetchUserData(token, setUserData);
     }
   }, [isAuthenticated, token]);
 
-  const handleLogout = () => {
-    signOut();
-    toast.success('Logged out successfully!');
-    router.push('/');
+  const onLogout = () => {
+    handleLogout(router, signOut);
   };
 
-  const handleCreateEntry = async () => {
-    if (!newEntryLabel) {
-      toast.error('Entry label cannot be empty.');
-      return;
-    }
-
-    try {
-      const data = await fetchAPI('POST', 'api/v1/user/entries', { label: newEntryLabel }, token);
-      if (data.message) {
-        toast.success(data.message);
-        setNewEntryLabel('');
-      }
-    } catch (error) {
-      console.error(error);
-    }
+  const onCreateEntry = () => {
+    handleCreateEntry(newEntryLabel, token, setNewEntryLabel);
   };
 
   if (isLoading || !isAuthenticated) {
@@ -76,7 +56,7 @@ export default function AuthPage() {
             <p>Loading user data...</p>
           )}
           <button
-            onClick={handleLogout}
+            onClick={onLogout}
             className="focus:shadow-outline mt-8 rounded bg-red-600 px-4 py-2 font-bold text-white hover:bg-red-700 focus:outline-none"
           >
             Logout
@@ -92,7 +72,7 @@ export default function AuthPage() {
             onChange={(e) => setNewEntryLabel(e.target.value)}
           />
           <button
-            onClick={handleCreateEntry}
+            onClick={onCreateEntry}
             className="focus:shadow-outline rounded bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none"
           >
             Create Entry

@@ -2,14 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  CognitoUserPool,
-  AuthenticationDetails,
-  CognitoUser,
-} from 'amazon-cognito-identity-js';
-import cognitoConfig from '../../cognito-config';
-import { toast } from 'react-toastify';
 import RedirectIfAuthenticated from '@/components/RedirectIfAuthenticated';
+import { handleLogin, handleSignUp, handleConfirmSignUp } from '../../actions';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -21,81 +15,19 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const userPool = new CognitoUserPool(cognitoConfig);
-
-  const handleLogin = async (event) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-
-    const authenticationDetails = new AuthenticationDetails({
-      Username: username,
-      Password: password,
-    });
-
-    const cognitoUser = new CognitoUser({
-      Username: username,
-      Pool: userPool,
-    });
-
-    cognitoUser.authenticateUser(authenticationDetails, {
-      onSuccess: (result) => {
-        toast.success('Login successful!');
-        setIsSubmitting(false);
-        router.push('/auth');
-      },
-      onFailure: (err) => {
-        toast.error(`Login failed: ${err.message}`);
-        setIsSubmitting(false);
-        setPassword('');
-      },
-    });
+  const onLogin = (e) => {
+    e.preventDefault();
+    handleLogin(router, username, password, setPassword, setIsSubmitting);
   };
 
-  const handleSignUp = async (event) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-
-    const attributeList = [];
-    attributeList.push({
-      Name: 'email',
-      Value: email,
-    });
-
-    userPool.signUp(username, password, attributeList, null, (err, result) => {
-      if (err) {
-        toast.error(`Sign up failed: ${err.message}`);
-        setIsSubmitting(false);
-        return;
-      }
-      toast.success(
-        'Sign up successful! Please check your email for the verification code.',
-      );
-      setIsConfirmingSignUp(true);
-      setIsSubmitting(false);
-    });
+  const onSignUp = (e) => {
+    e.preventDefault();
+    handleSignUp(username, password, email, setIsConfirmingSignUp, setIsSubmitting);
   };
 
-  const handleConfirmSignUp = async (event) => {
-    event.preventDefault();
-    setIsSubmitting(true);
-
-    const cognitoUser = new CognitoUser({
-      Username: username,
-      Pool: userPool,
-    });
-
-    cognitoUser.confirmRegistration(verificationCode, true, (err, result) => {
-      if (err) {
-        toast.error(`Verification failed: ${err.message}`);
-        setIsSubmitting(false);
-        return;
-      }
-      toast.success('Account confirmed successfully! You can now log in.');
-      setIsConfirmingSignUp(false);
-      setIsSignUp(false); // Switch back to login form
-      router.push('/login');
-      setIsSubmitting(false);
-    });
+  const onConfirmSignUp = (e) => {
+    e.preventDefault();
+    handleConfirmSignUp(router, username, verificationCode, setIsConfirmingSignUp, setIsSignUp, setIsSubmitting);
   };
 
   return (
@@ -110,13 +42,7 @@ export default function Login() {
               : 'Login to Ailumni'}
         </h2>
         <form
-          onSubmit={
-            isConfirmingSignUp
-              ? handleConfirmSignUp
-              : isSignUp
-                ? handleSignUp
-                : handleLogin
-          }
+          onSubmit={isConfirmingSignUp ? onConfirmSignUp : isSignUp ? onSignUp : onLogin}
           className="w-96 rounded-lg bg-white p-8 shadow-md"
         >
           {!isConfirmingSignUp && (
