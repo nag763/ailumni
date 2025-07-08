@@ -28,7 +28,8 @@ resource "aws_iam_policy" "lambda_exec_policy" {
       {
         Action = [
           "dynamodb:Query",
-          "dynamodb:PutItem"
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem"
         ]
         Effect   = "Allow"
         Resource = aws_dynamodb_table.main.arn
@@ -88,6 +89,23 @@ resource "aws_lambda_function" "create_entry" {
   tags = var.tags
 }
 
+resource "aws_lambda_function" "delete_entry" {
+  function_name    = "${var.project_name}-delete-entry"
+  role             = aws_iam_role.lambda_exec_role.arn
+  handler          = "index.handler"
+  runtime          = "nodejs22.x"
+  filename         = "../lambda/delete-entry/delete-entry.zip"
+  source_code_hash = filebase64sha256("../lambda/delete-entry/delete-entry.zip")
+
+  environment {
+    variables = {
+      DYNAMODB_TABLE = aws_dynamodb_table.main.name
+    }
+  }
+
+  tags = var.tags
+}
+
 # API Gateway
 resource "aws_apigatewayv2_api" "http_api" {
   name          = "${var.project_name}-http-api"
@@ -124,6 +142,13 @@ resource "aws_apigatewayv2_integration" "create_entry" {
   payload_format_version = "2.0"
 }
 
+resource "aws_apigatewayv2_integration" "delete_entry" {
+  api_id                 = aws_apigatewayv2_api.http_api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.delete_entry.invoke_arn
+  payload_format_version = "2.0"
+}
+
 resource "aws_apigatewayv2_route" "get_user" {
   api_id             = aws_apigatewayv2_api.http_api.id
   route_key          = "GET /api/v1/user/entries"
@@ -139,6 +164,15 @@ resource "aws_apigatewayv2_route" "create_entry" {
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
+
+resource "aws_apigatewayv2_route" "delete_entry" {
+  api_id             = aws_apigatewayv2_api.http_api.id
+  route_key          = "DELETE /api/v1/user/entries/{itemId}"
+  target             = "integrations/${aws_apigatewayv2_integration.delete_entry.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
 
 resource "aws_apigatewayv2_authorizer" "cognito" {
   api_id           = aws_apigatewayv2_api.http_api.id
@@ -164,6 +198,14 @@ resource "aws_lambda_permission" "api_gateway_create_entry" {
   statement_id  = "AllowAPIGatewayInvokeCreateEntry"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.create_entry.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
+}
+
+resource "aws_lambda_permission" "api_gateway_delete_entry" {
+  statement_id  = "AllowAPIGatewayInvokeDeleteEntry"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.delete_entry.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
 }

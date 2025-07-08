@@ -1,0 +1,18 @@
+{
+  "name": "delete-entry",
+  "version": "1.0.0",
+  "description": "Lambda function to delete an entry from DynamoDB",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "esbuild index.js --bundle --minify --sourcemap --platform=node --target=node22 --outfile=dist/index.js && cd dist && zip -r ../delete-entry.zip ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.525.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0"
+  }
+}

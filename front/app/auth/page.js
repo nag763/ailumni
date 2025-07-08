@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import AuthGuard from '../../components/AuthGuard';
 import { useCognitoUser } from '../../hooks/useCognitoUser';
 import { useRouter } from 'next/navigation';
-import { handleLogout, handleCreateEntry, fetchEntries } from '../../actions';
+import { handleLogout, handleCreateEntry, fetchEntries, deleteEntry } from '../../actions';
 
 export default function AuthPage() {
   const { user, token, isLoading, isAuthenticated, signOut } = useCognitoUser();
@@ -34,11 +34,9 @@ export default function AuthPage() {
     setNewEntryLabel('');
   };
 
-  const handleDeleteEntry = (itemId) => {
-    console.log(`TODO: Implement deletion for item ${itemId}`);
-    // After implementing delete in actions.js and backend:
-    // await handleDeleteEntry(itemId, token);
-    // fetchEntries(token, setEntries);
+  const handleDeleteEntry = async (itemId) => {
+    await deleteEntry(itemId, token);
+    fetchEntries(token, setEntries);
   };
 
   if (isLoading || !isAuthenticated) {

@@ -7,6 +7,7 @@ on:
     paths:
       - 'lambda/retrieve-entry/**'
       - 'lambda/create-entry/**'
+      - 'lambda/delete-entry/**'
       - '.github/workflows/deploy_lambda.yml'
 
 permissions:
@@ -75,3 +76,32 @@ jobs:
       - name: Deploy Lambda function
         run: |
           aws lambda update-function-code --function-name ailumni-front-create-entry --zip-file fileb://lambda/create-entry/create-entry.zip --region ${{ env.AWS_REGION }}
+
+  build-and-deploy-delete-entry:
+    name: Build and Deploy Delete Entry Lambda
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install dependencies and build
+        working-directory: ./lambda/delete-entry
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy Lambda function
+        run: |
+          aws lambda update-function-code --function-name ailumni-front-delete-entry --zip-file fileb://lambda/delete-entry/delete-entry.zip --region ${{ env.AWS_REGION }}

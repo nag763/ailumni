@@ -88,20 +88,22 @@ export const handleLogout = (router, signOut) => {
   router.push('/');
 };
 
-export const handleCreateEntry = async (newEntryLabel, token, setNewEntryLabel) => {
-  if (!newEntryLabel) {
-    toast.error('Entry label cannot be empty.');
-    return;
-  }
-
+export const handleCreateEntry = async (label, token, setNewLabel) => {
   try {
-    const data = await fetchAPI('POST', 'api/v1/user/entries', { label: newEntryLabel }, token);
-    if (data.message) {
-      toast.success(data.message);
-      setNewEntryLabel('');
-    }
+    await fetchAPI('POST', '/api/v1/user/entries', { label }, token);
+    setNewLabel('');
+    toast.success('Entry created successfully!');
   } catch (error) {
-    console.error(error);
+    // Error is already handled by fetchAPI
+  }
+};
+
+export const deleteEntry = async (itemId, token) => {
+  try {
+    await fetchAPI('DELETE', `/api/v1/user/entries/${itemId}`, null, token);
+    toast.success('Entry deleted successfully!');
+  } catch (error) {
+    // Error is already handled by fetchAPI
   }
 };
 
