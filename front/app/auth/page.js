@@ -13,7 +13,6 @@ export default function AuthPage() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log({ isAuthenticated, token });
     if (isAuthenticated && token) {
       fetch(process.env.NEXT_PUBLIC_API_ENDPOINT + 'api/v1/user/entries', {
         headers: {
