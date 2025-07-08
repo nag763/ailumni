@@ -27,7 +27,7 @@ resource "aws_ecs_task_definition" "main" {
       ]
       environment = [
         {
-          name  = "API_ENDPOINT"
+          name  = "NEXT_PUBLIC_API_ENDPOINT"
           value = aws_apigatewayv2_stage.default.invoke_url
         }
     ] }
