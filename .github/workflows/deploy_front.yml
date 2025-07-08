@@ -50,7 +50,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_USER_POOL_ID=${{ secrets.NEXT_PUBLIC_USER_POOL_ID }}
             NEXT_PUBLIC_CLIENT_ID=${{ secrets.NEXT_PUBLIC_CLIENT_ID }}
-            NEXT_PUBLIC_API_ENDPOINT=${{ secrets.NEXT_PUBLIC_API_ENDPOINT }}
+            API_ENDPOINT=${{ secrets.API_ENDPOINT }}
 
   deploy:
     name: Deploy to ECS

@@ -14,7 +14,7 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (isAuthenticated && token) {
-      fetch(process.env.NEXT_PUBLIC_API_ENDPOINT + 'api/v1/user/entries', {
+      fetch(process.env.API_ENDPOINT + 'api/v1/user/entries', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -40,12 +40,12 @@ export default function AuthPage() {
       return;
     }
 
-    const endpoint = process.env.NEXT_PUBLIC_API_ENDPOINT;
+    const endpoint = process.env.API_ENDPOINT;
     if(!endpoint) {
-      throw new Error("NEXT_PUBLIC_API_ENDPOINT is not defined")
+      throw new Error("API_ENDPOINT is not defined")
     }
 
-    fetch(process.env.NEXT_PUBLIC_API_ENDPOINT + 'api/v1/user/entries', {
+    fetch(process.env.API_ENDPOINT + 'api/v1/user/entries', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
