@@ -1,8 +1,9 @@
-const { DynamoDBClient, PutCommand } = require("@aws-sdk/client-dynamodb");
-const { marshall } = require("@aws-sdk/util-dynamodb");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { PutCommand, DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
 const { v4: uuidv4 } = require('uuid');
 
 const client = new DynamoDBClient({});
+const docClient = new DynamoDBDocumentClient(client);
 
 exports.handler = async (event) => {
 
@@ -15,18 +16,17 @@ exports.handler = async (event) => {
 
   const params = {
     TableName: tableName,
-    Item: marshall({
+    Item: {
       user_sub: userSub,
       item_id: itemId,
       label: label,
       created_at: new Date().toISOString(),
-    }),
+    },
   };
 
   try {
     const command = new PutCommand(params);
-    await client.send(command);
-    console.log('PutCommand successful');
+    await docClient.send(command);
 
     return {
       statusCode: 200,
