@@ -8,7 +8,7 @@ API_ENDPOINT=$(terraform -chdir=./terraform output -raw API_ENDPOINT)
 gh secret set NEXT_PUBLIC_CLIENT_ID -b "$NEXT_PUBLIC_CLIENT_ID"
 gh secret set NEXT_PUBLIC_USER_POOL_ID -b "$NEXT_PUBLIC_USER_POOL_ID" 
 gh secret set AWS_IAM_ROLE_ARN -b "$AWS_IAM_ROLE_ARN"
-gh secret set API_ENDPOINT -b "$API_ENDPOINT"
+gh secret set NEXT_PUBLIC_API_ENDPOINT -b "$API_ENDPOINT"
 
 # Cleans the env variables
 unset NEXT_PUBLIC_CLIENT_ID

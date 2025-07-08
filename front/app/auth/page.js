@@ -5,6 +5,7 @@ import AuthGuard from '../../components/AuthGuard';
 import { useCognitoUser } from '../../hooks/useCognitoUser';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import fetchAPI from '../../lib/fetchAPI';
 
 export default function AuthPage() {
   const { user, token, isLoading, isAuthenticated, signOut } = useCognitoUser();
@@ -14,16 +15,10 @@ export default function AuthPage() {
 
   useEffect(() => {
     if (isAuthenticated && token) {
-      fetch(process.env.API_ENDPOINT + 'api/v1/user/entries', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => res.json())
+      fetchAPI('GET', 'api/v1/user/entries', null, token)
         .then((data) => setUserData(data))
         .catch((err) => {
           console.error(err);
-          toast.error('Failed to fetch user data.');
         });
     }
   }, [isAuthenticated, token]);
@@ -34,38 +29,21 @@ export default function AuthPage() {
     router.push('/');
   };
 
-  const handleCreateEntry = () => {
+  const handleCreateEntry = async () => {
     if (!newEntryLabel) {
       toast.error('Entry label cannot be empty.');
       return;
     }
 
-    const endpoint = process.env.API_ENDPOINT;
-    if(!endpoint) {
-      throw new Error("API_ENDPOINT is not defined")
+    try {
+      const data = await fetchAPI('POST', 'api/v1/user/entries', { label: newEntryLabel }, token);
+      if (data.message) {
+        toast.success(data.message);
+        setNewEntryLabel('');
+      }
+    } catch (error) {
+      console.error(error);
     }
-
-    fetch(process.env.API_ENDPOINT + 'api/v1/user/entries', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ label: newEntryLabel }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.message) {
-          toast.success(data.message);
-          setNewEntryLabel('');
-        } else if (data.error) {
-          toast.error(data.error);
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-        toast.error('Failed to create entry.');
-      });
   };
 
   if (isLoading || !isAuthenticated) {
