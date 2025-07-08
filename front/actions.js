@@ -105,9 +105,9 @@ export const handleCreateEntry = async (newEntryLabel, token, setNewEntryLabel) 
   }
 };
 
-export const fetchUserData = (token, setUserData) => {
+export const fetchEntries = (token, setEntries) => {
   fetchAPI('GET', 'api/v1/user/entries', null, token)
-    .then((data) => setUserData(data))
+    .then((data) => setEntries(data))
     .catch((err) => {
       console.error(err);
     });

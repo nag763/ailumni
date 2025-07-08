@@ -24,12 +24,33 @@ const fetchAPI = async (method, endpoint, data = null, token = null) => {
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.error || 'Something went wrong');
+      const errorData = {
+        status: response.status,
+        message: result.error || result.message || result.detail || 'An error occurred.',
+      };
+      throw errorData;
     }
 
     return result;
   } catch (error) {
-    toast.error(error.message);
+    if (error.status) {
+      switch (error.status) {
+        case 400:
+          toast.error(error.message);
+          break;
+        case 401:
+        case 403:
+          toast.error('Please log in again.');
+          break;
+        case 500:
+          toast.error('An unexpected error occurred. Please try again later.');
+          break;
+        default:
+          toast.error(error.message);
+      }
+    } else {
+      toast.error('An unexpected error occurred.');
+    }
     throw error;
   }
 };

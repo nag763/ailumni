@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'lambda/retrieve-user/**'
+      - 'lambda/retrieve-entry/**'
       - 'lambda/create-entry/**'
       - '.github/workflows/deploy_lambda.yml'
 
@@ -15,10 +15,10 @@ permissions:
 
 env:
   AWS_REGION: eu-west-3
-  LAMBDA_FUNCTION_NAME: ailumni-front-retrieve-user
+  LAMBDA_FUNCTION_NAME: ailumni-front-retrieve-entry
 
 jobs:
-  build-and-deploy-retrieve-user:
+  build-and-deploy-retrieve-entry:
     name: Build and Deploy Retrieve User Lambda
     runs-on: ubuntu-latest
 
@@ -38,14 +38,14 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies and build
-        working-directory: ./lambda/retrieve-user
+        working-directory: ./lambda/retrieve-entry
         run: |
           npm ci
           npm run build
 
       - name: Deploy Lambda function
         run: |
-          aws lambda update-function-code --function-name ailumni-front-retrieve-user --zip-file fileb://lambda/retrieve-user/retrieve-user.zip --region ${{ env.AWS_REGION }}
+          aws lambda update-function-code --function-name ailumni-front-retrieve-entry --zip-file fileb://lambda/retrieve-entry/retrieve-entry.zip --region ${{ env.AWS_REGION }}
 
   build-and-deploy-create-entry:
     name: Build and Deploy Create Entry Lambda

@@ -20,7 +20,7 @@ resource "aws_iam_role" "lambda_exec_role" {
 
 resource "aws_iam_policy" "lambda_exec_policy" {
   name        = "${var.project_name}-lambda-exec-policy"
-  description = "Policy for the retrieve-user lambda function."
+  description = "Policy for the retrieve-entry lambda function."
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -55,12 +55,12 @@ resource "aws_iam_role_policy_attachment" "lambda_exec_policy" {
 
 # Lambda function
 resource "aws_lambda_function" "retrieve_user" {
-  function_name    = "${var.project_name}-retrieve-user"
+  function_name    = "${var.project_name}-retrieve-entry"
   role             = aws_iam_role.lambda_exec_role.arn
   handler          = "index.handler"
   runtime          = "nodejs22.x"
-  filename         = "../lambda/retrieve-user/retrieve-user.zip"
-  source_code_hash = filebase64sha256("../lambda/retrieve-user/retrieve-user.zip")
+  filename         = "../lambda/retrieve-entry/retrieve-entry.zip"
+  source_code_hash = filebase64sha256("../lambda/retrieve-entry/retrieve-entry.zip")
 
   environment {
     variables = {

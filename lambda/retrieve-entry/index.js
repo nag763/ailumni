@@ -17,6 +17,8 @@ exports.handler = async (event) => {
     ExpressionAttributeValues: {
       ":s": { S: userSub },
     },
+    Limit: 5,
+    ScanIndexForward: false // Optional: to get the latest entries if you have a sort key like a timestamp
   };
 
   try {
@@ -24,13 +26,13 @@ exports.handler = async (event) => {
     const { Items } = await client.send(command);
     console.log('Query response:', JSON.stringify(Items));
     
-    const item = Items.length > 0 ? unmarshall(Items[0]) : {};
-    console.log('Unmarshalled item:', JSON.stringify(item));
+    const unmarshalledItems = Items.map(item => unmarshall(item));
+    console.log('Unmarshalled items:', JSON.stringify(unmarshalledItems));
 
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(item),
+      body: JSON.stringify(unmarshalledItems),
     };
   } catch (error) {
     console.error('Error executing query:', error);
