@@ -108,11 +108,15 @@ export const deleteEntry = async (itemId, token) => {
   }
 };
 
-export const fetchEntries = (token, setEntries) => {
+export const fetchEntries = (token, setEntries, setIsLoading) => {
+  setIsLoading(true);
   fetchAPI('GET', 'api/v1/user/entries', null, token)
     .then((data) => setEntries(data))
     .catch((err) => {
       console.error(err);
+    })
+    .finally(() => {
+      setIsLoading(false);
     });
 };
 

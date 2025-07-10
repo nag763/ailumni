@@ -8,7 +8,7 @@ export default function LearnMore() {
           <h1 className="text-3xl font-bold text-gray-800">Ailumni</h1>
         </Link>
         <Link href="/login">
-          <button className="transform rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white transition-all hover:scale-105 hover:bg-blue-700 active:scale-95 active:bg-blue-800">
+          <button className="transform rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white transition-all hover:scale-105 hover:bg-indigo-700 active:scale-95 active:bg-indigo-800">
             Login
           </button>
         </Link>

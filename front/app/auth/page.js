@@ -16,11 +16,12 @@ export default function AuthPage() {
   const [newEntryLabel, setNewEntryLabel] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [entries, setEntries] = useState([]);
+  const [isEntriesLoading, setIsEntriesLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     if (token) {
-      fetchEntries(token, setEntries);
+      fetchEntries(token, setEntries, setIsEntriesLoading);
     }
   }, [token]);
 
@@ -38,7 +39,7 @@ export default function AuthPage() {
       router.push(`/auth/${newEntry.item_id}`);
     }
     setIsCreating(false);
-    fetchEntries(token, setEntries);
+    fetchEntries(token, setEntries, setIsCreating);
   };
 
   const handleCancelCreate = () => {
@@ -54,10 +55,126 @@ export default function AuthPage() {
   if (isLoading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50">
-        Loading user data...
+        <div className="flex items-center text-lg text-gray-700">
+          <svg
+            className="mr-3 -ml-1 h-5 w-5 animate-spin text-indigo-600"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            ></circle>
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            ></path>
+          </svg>
+          Authenticating your session...
+        </div>
       </div>
     );
   }
+
+  const renderEntries = () => {
+    if (isEntriesLoading) {
+      return Array.from({ length: 4 }).map((_, index) => (
+        <div
+          key={index}
+          className="h-48 w-full animate-pulse rounded-lg bg-white p-6 shadow-md"
+        >
+          <div className="mb-2 h-4 w-3/4 rounded bg-gray-300"></div>
+          <div className="mb-2 h-3 w-1/2 rounded bg-gray-300"></div>
+          <div className="h-3 w-1/4 rounded bg-gray-300"></div>
+        </div>
+      ));
+    }
+
+    return (
+      <>
+        {!isCreating ? (
+          <div
+            onClick={() => setIsCreating(true)}
+            className="flex h-48 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-8 shadow-md transition-colors hover:bg-gray-100"
+          >
+            <span className="text-8xl font-light text-gray-300">+</span>
+          </div>
+        ) : (
+          <div className="h-auto w-full rounded-lg bg-white p-6 shadow-md">
+            <h3 className="mb-4 text-lg font-semibold text-gray-700">
+              New Entry
+            </h3>
+            <input
+              type="text"
+              placeholder="Entry Label"
+              className="mb-4 w-full rounded border border-gray-300 p-2"
+              value={newEntryLabel}
+              onChange={(e) => setNewEntryLabel(e.target.value)}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleCancelCreate}
+                className="focus:shadow-outline rounded bg-gray-300 px-4 py-2 font-bold text-gray-700 hover:bg-gray-400 focus:outline-none"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={onCreateEntry}
+                className="focus:shadow-outline rounded bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700 focus:outline-none"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        )}
+        {entries &&
+          entries.map((entry) => (
+            <div
+              key={entry.item_id}
+              className="relative h-48 w-full cursor-pointer rounded-lg bg-white p-6 shadow-md transition-colors hover:bg-gray-100"
+              onClick={() => router.push(`/auth/${entry.item_id}`)}
+            >
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDeleteEntry(entry.item_id);
+                }}
+                className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              <h3 className="mb-2 text-lg font-semibold text-gray-800">
+                {entry.label}
+              </h3>
+              <p className="text-sm text-gray-500">
+                ID: {entry.item_id.substring(0, 8)}...
+              </p>
+              <p className="text-sm text-gray-500">
+                Created: {new Date(entry.created_at).toLocaleDateString()}
+              </p>
+            </div>
+          ))}
+      </>
+    );
+  };
 
   return (
     <AuthGuard>
@@ -76,80 +193,7 @@ export default function AuthPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {!isCreating ? (
-              <div
-                onClick={() => setIsCreating(true)}
-                className="flex h-48 w-full cursor-pointer items-center justify-center rounded-lg bg-white p-8 shadow-md transition-colors hover:bg-gray-100"
-              >
-                <span className="text-8xl font-light text-gray-300">+</span>
-              </div>
-            ) : (
-              <div className="h-auto w-full rounded-lg bg-white p-6 shadow-md">
-                <h3 className="mb-4 text-lg font-semibold text-gray-700">
-                  New Entry
-                </h3>
-                <input
-                  type="text"
-                  placeholder="Entry Label"
-                  className="mb-4 w-full rounded border border-gray-300 p-2"
-                  value={newEntryLabel}
-                  onChange={(e) => setNewEntryLabel(e.target.value)}
-                  autoFocus
-                />
-                <div className="flex justify-end gap-2">
-                  <button
-                    onClick={handleCancelCreate}
-                    className="focus:shadow-outline rounded bg-gray-300 px-4 py-2 font-bold text-gray-700 hover:bg-gray-400 focus:outline-none"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={onCreateEntry}
-                    className="focus:shadow-outline rounded bg-blue-600 px-4 py-2 font-bold text-white hover:bg-blue-700 focus:outline-none"
-                  >
-                    Create
-                  </button>
-                </div>
-              </div>
-            )}
-            {entries &&
-              entries.map((entry) => (
-                <div
-                  key={entry.item_id}
-                  className="relative h-48 w-full cursor-pointer rounded-lg bg-white p-6 shadow-md transition-colors hover:bg-gray-100"
-                  onClick={() => router.push(`/auth/${entry.item_id}`)}
-                >
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteEntry(entry.item_id);
-                    }}
-                    className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                  <h3 className="mb-2 text-lg font-semibold text-gray-800">
-                    {entry.label}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    ID: {entry.item_id.substring(0, 8)}...
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Created: {new Date(entry.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
+            {renderEntries()}
           </div>
         </div>
       </div>
