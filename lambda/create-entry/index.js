@@ -57,7 +57,7 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: "Item created successfully", itemId: itemId }),
+      body: JSON.stringify({ message: "Item created successfully", ...putParams.Item }),
     };
   } catch (error) {
     console.error('Error executing PutCommand:', error);

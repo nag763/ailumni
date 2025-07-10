@@ -90,9 +90,10 @@ export const handleLogout = (router, signOut) => {
 
 export const handleCreateEntry = async (label, token, setNewLabel) => {
   try {
-    await fetchAPI('POST', '/api/v1/user/entries', { label }, token);
+    const newEntry = await fetchAPI('POST', '/api/v1/user/entries', { label }, token);
     setNewLabel('');
     toast.success('Entry created successfully!');
+    return newEntry;
   } catch (error) {
     // Error is already handled by fetchAPI
   }
@@ -110,6 +111,14 @@ export const deleteEntry = async (itemId, token) => {
 export const fetchEntries = (token, setEntries) => {
   fetchAPI('GET', 'api/v1/user/entries', null, token)
     .then((data) => setEntries(data))
+    .catch((err) => {
+      console.error(err);
+    });
+};
+
+export const fetchEntry = (token, itemId, setEntry) => {
+  fetchAPI('GET', `api/v1/user/entries/${itemId}`, null, token)
+    .then((data) => setEntry(data))
     .catch((err) => {
       console.error(err);
     });

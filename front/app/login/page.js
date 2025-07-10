@@ -22,12 +22,25 @@ export default function Login() {
 
   const onSignUp = (e) => {
     e.preventDefault();
-    handleSignUp(username, password, email, setIsConfirmingSignUp, setIsSubmitting);
+    handleSignUp(
+      username,
+      password,
+      email,
+      setIsConfirmingSignUp,
+      setIsSubmitting,
+    );
   };
 
   const onConfirmSignUp = (e) => {
     e.preventDefault();
-    handleConfirmSignUp(router, username, verificationCode, setIsConfirmingSignUp, setIsSignUp, setIsSubmitting);
+    handleConfirmSignUp(
+      router,
+      username,
+      verificationCode,
+      setIsConfirmingSignUp,
+      setIsSignUp,
+      setIsSubmitting,
+    );
   };
 
   return (
@@ -42,7 +55,9 @@ export default function Login() {
               : 'Login to Ailumni'}
         </h2>
         <form
-          onSubmit={isConfirmingSignUp ? onConfirmSignUp : isSignUp ? onSignUp : onLogin}
+          onSubmit={
+            isConfirmingSignUp ? onConfirmSignUp : isSignUp ? onSignUp : onLogin
+          }
           className="w-96 rounded-lg bg-white p-8 shadow-md"
         >
           {!isConfirmingSignUp && (
