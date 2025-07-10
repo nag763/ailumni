@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import AuthGuard from '../../components/AuthGuard';
 import { useCognitoUser } from '../../hooks/useCognitoUser';
 import { useRouter } from 'next/navigation';
 import {
@@ -40,7 +39,7 @@ export default function AuthPage() {
       router.push(`/auth/${newEntry.item_id}`);
     }
     setIsCreating(false);
-    fetchEntries(token, setEntries, setIsCreating);
+    fetchEntries(token, setEntries, setIsEntriesLoading);
   };
 
   const handleCancelCreate = () => {
@@ -50,7 +49,7 @@ export default function AuthPage() {
 
   const handleDeleteEntry = async (itemId) => {
     await deleteEntry(itemId, token);
-    fetchEntries(token, setEntries);
+    fetchEntries(token, setEntries, setIsEntriesLoading);
   };
 
   if (isLoading || !isAuthenticated) {
@@ -152,26 +151,24 @@ export default function AuthPage() {
   };
 
   return (
-    <AuthGuard>
-      <div className="flex min-h-screen flex-col items-start bg-gray-50 p-8">
-        <div className="mx-auto w-full max-w-6xl">
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-3xl font-bold text-gray-800">
-              Welcome, {user.username}!
-            </h2>
-            <button
-              onClick={onLogout}
-              className="focus:shadow-outline rounded bg-red-600 px-4 py-2 font-bold text-white hover:bg-red-700 focus:outline-none"
-            >
-              Logout
-            </button>
-          </div>
+    <div className="flex min-h-screen flex-col items-start bg-gray-50 p-8">
+      <div className="mx-auto w-full max-w-6xl">
+        <div className="mb-8 flex items-center justify-between">
+          <h2 className="text-3xl font-bold text-gray-800">
+            Welcome, {user.username}!
+          </h2>
+          <button
+            onClick={onLogout}
+            className="focus:shadow-outline rounded bg-red-600 px-4 py-2 font-bold text-white hover:bg-red-700 focus:outline-none"
+          >
+            Logout
+          </button>
+        </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {renderEntries()}
-          </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {renderEntries()}
         </div>
       </div>
-    </AuthGuard>
+    </div>
   );
 }
