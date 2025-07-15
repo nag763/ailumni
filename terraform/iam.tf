@@ -3,7 +3,7 @@ data "aws_iam_policy_document" "github_assume_role" {
     actions = ["sts:AssumeRoleWithWebIdentity"]
     principals {
       type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
+      identifiers = [data.aws_iam_openid_connect_provider.github.arn]
     }
     condition {
       test     = "StringLike"
@@ -13,14 +13,8 @@ data "aws_iam_policy_document" "github_assume_role" {
   }
 }
 
-resource "aws_iam_openid_connect_provider" "github" {
+data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
-
-  client_id_list = [
-    "sts.amazonaws.com"
-  ]
-
-  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
 }
 
 resource "aws_iam_role" "github_actions" {
@@ -89,6 +83,13 @@ resource "aws_iam_policy" "github_actions" {
         ]
         Effect   = "Allow"
         Resource = aws_lambda_function.delete_entry.arn
+      },
+      {
+        Action = [
+          "lambda:UpdateFunctionCode",
+        ]
+        Effect = "Allow"
+        Resource = aws_lambda_function.get_entry.arn
       }
     ]
   })
