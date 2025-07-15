@@ -5,6 +5,7 @@ import { useCognitoUser } from '../../../hooks/useCognitoUser';
 import { fetchEntry } from '../../../actions';
 import { useParams } from 'next/navigation';
 import LoadingSpinner from '../../../components/LoadingSpinner';
+import FileManager from '../../../components/FileManager';
 
 export default function ItemDetailsPage() {
   const { token } = useCognitoUser();
@@ -29,6 +30,7 @@ export default function ItemDetailsPage() {
         <p className="text-lg text-gray-600">
           Created At: {new Date(entry.created_at).toLocaleString()}
         </p>
+        <FileManager itemId={itemId} />
       </div>
     </div>
   );

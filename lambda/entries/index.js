@@ -2,10 +2,14 @@ const { DynamoDBClient, QueryCommand, GetItemCommand, DeleteItemCommand } = requ
 const { PutCommand, DynamoDBDocumentClient } = require('@aws-sdk/lib-dynamodb');
 const { v4: uuidv4 } = require('uuid');
 const { unmarshall } = require("@aws-sdk/util-dynamodb");
+const { S3Client, ListObjectsV2Command, GetObjectCommand, PutObjectCommand, DeleteObjectsCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const client = new DynamoDBClient({});
 const docClient = new DynamoDBDocumentClient(client);
+const s3Client = new S3Client({});
 const tableName = process.env.DYNAMODB_TABLE;
+const bucketName = process.env.S3_BUCKET_NAME;
 
 exports.handler = async (event) => {
   console.log('Event received:', JSON.stringify(event));
@@ -20,6 +24,10 @@ exports.handler = async (event) => {
       return deleteEntry(userSub, event.pathParameters.itemId);
     case "GET /api/v1/user/entries/{itemId}":
       return getEntry(userSub, event.pathParameters.itemId);
+    case "GET /api/v1/user/entries/{itemId}/files":
+      return listFiles(userSub, event.pathParameters.itemId);
+    case "GET /api/v1/user/entries/{itemId}/upload-url":
+      return getUploadUrl(userSub, event.pathParameters.itemId, event.queryStringParameters.fileName);
     default:
       return {
         statusCode: 404,
@@ -125,6 +133,7 @@ async function createEntry(userSub, { label }) {
 
 async function deleteEntry(userSub, itemId) {
   console.log(`Deleting item with id '${itemId}' for user '${userSub}' in table '${tableName}'`);
+  const userFolder = `${userSub}/${itemId}/`;
 
   const params = {
     TableName: tableName,
@@ -135,6 +144,18 @@ async function deleteEntry(userSub, itemId) {
   };
 
   try {
+    // Delete all objects in the user's folder
+    const { Contents } = await s3Client.send(new ListObjectsV2Command({ Bucket: bucketName, Prefix: userFolder }));
+    if (Contents && Contents.length > 0) {
+      const deleteParams = {
+        Bucket: bucketName,
+        Delete: {
+          Objects: Contents.map(({ Key }) => ({ Key }))
+        }
+      };
+      await s3Client.send(new DeleteObjectsCommand(deleteParams));
+    }
+
     const command = new DeleteItemCommand(params);
     await client.send(command);
 
@@ -185,6 +206,58 @@ async function getEntry(userSub, itemId) {
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Error retrieving entry" }),
+    };
+  }
+}
+
+async function listFiles(userSub, itemId) {
+  const userFolder = `${userSub}/${itemId}/`;
+
+  try {
+    const { Contents } = await s3Client.send(new ListObjectsV2Command({ Bucket: bucketName, Prefix: userFolder }));
+    if(!Contents) {
+      return {
+        statusCode: 204,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "No files found" }),
+      }
+    } 
+    const files = Contents.map(file => ({
+      key: file.Key.replace(userFolder, ""),
+      lastModified: file.LastModified,
+      size: file.Size,
+    }));
+
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(files),
+    };
+  } catch (error) {
+    console.error('Error listing files:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: "Error listing files" }),
+    };
+  }
+}
+
+async function getUploadUrl(userSub, itemId, fileName) {
+  const key = `${userSub}/${itemId}/${fileName}`;
+  const command = new PutObjectCommand({ Bucket: bucketName, Key: key });
+
+  try {
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    };
+  } catch (error) {
+    console.error('Error generating upload URL:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: "Error generating upload URL" }),
     };
   }
 }

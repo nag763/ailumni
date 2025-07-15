@@ -69,7 +69,8 @@ resource "aws_iam_policy" "github_actions" {
         ]
         Effect   = "Allow"
         Resource = aws_lambda_function.api.arn
-      }
+      },
+
     ]
   })
 

@@ -21,6 +21,7 @@ const fetchAPI = async (method, endpoint, data = null, token = null) => {
 
   try {
     const response = await fetch(process.env.NEXT_PUBLIC_API_ENDPOINT + endpoint, config);
+    if(response.status === 204) return Promise.resolve(null);
     const result = await response.json();
 
     if (!response.ok) {
@@ -51,6 +52,8 @@ const fetchAPI = async (method, endpoint, data = null, token = null) => {
     } else {
       toast.error('An unexpected error occurred.');
     }
+
+    console.error("Fetch API error", error);
     throw error;
   }
 };

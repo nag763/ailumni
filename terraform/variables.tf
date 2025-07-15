@@ -35,3 +35,9 @@ variable "tags" {
     app = "ailumni"
   }
 }
+
+variable "s3_bucket_name" {
+  description = "The name of the S3 bucket for user content."
+  type        = string
+  default     = "ailumni-user-content"
+}

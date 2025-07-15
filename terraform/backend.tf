@@ -27,6 +27,22 @@ resource "aws_iam_policy" "lambda_exec_policy" {
     Statement = [
       {
         Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+        Effect   = "Allow"
+        Resource = "${aws_s3_bucket.user_content.arn}/*"
+      },
+      {
+        Action = [
+          "s3:ListBucket"
+        ]
+        Effect   = "Allow"
+        Resource = aws_s3_bucket.user_content.arn
+      },
+      {
+        Action = [
           "dynamodb:Query",
           "dynamodb:PutItem",
           "dynamodb:DeleteItem",
@@ -67,6 +83,7 @@ resource "aws_lambda_function" "api" {
   environment {
     variables = {
       DYNAMODB_TABLE = aws_dynamodb_table.main.name
+      S3_BUCKET_NAME = aws_s3_bucket.user_content.id
     }
   }
 
@@ -129,6 +146,22 @@ resource "aws_apigatewayv2_route" "delete_entry" {
 resource "aws_apigatewayv2_route" "get_entry" {
   api_id             = aws_apigatewayv2_api.http_api.id
   route_key          = "GET /api/v1/user/entries/{itemId}"
+  target             = "integrations/${aws_apigatewayv2_integration.api.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "list_files" {
+  api_id             = aws_apigatewayv2_api.http_api.id
+  route_key          = "GET /api/v1/user/entries/{itemId}/files"
+  target             = "integrations/${aws_apigatewayv2_integration.api.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "get_upload_url" {
+  api_id             = aws_apigatewayv2_api.http_api.id
+  route_key          = "GET /api/v1/user/entries/{itemId}/upload-url"
   target             = "integrations/${aws_apigatewayv2_integration.api.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
