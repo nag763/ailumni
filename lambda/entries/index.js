@@ -28,6 +28,8 @@ exports.handler = async (event) => {
       return listFiles(userSub, event.pathParameters.itemId);
     case "GET /api/v1/user/entries/{itemId}/upload-url":
       return getUploadUrl(userSub, event.pathParameters.itemId, event.queryStringParameters.fileName);
+    case "DELETE /api/v1/user/entries/{itemId}/files":
+      return deleteFile(userSub, event.pathParameters.itemId, event.queryStringParameters.fileName);
     default:
       return {
         statusCode: 404,
@@ -243,6 +245,16 @@ async function listFiles(userSub, itemId) {
 }
 
 async function getUploadUrl(userSub, itemId, fileName) {
+  const allowedExtensions = ['txt', 'md', 'json', 'csv', 'xml', 'html', 'css', 'js', 'py', 'java', 'c', 'cpp', 'h', 'hpp', 'php', 'rb', 'go', 'rs', 'swift', 'kt', 'ts', 'tsx', 'jsx', 'vue', 'yml', 'yaml', 'toml', 'ini', 'log'];
+  const fileExtension = fileName.split('.').pop().toLowerCase();
+
+  if (!allowedExtensions.includes(fileExtension)) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: `File type .${fileExtension} is not allowed.` }),
+    };
+  }
+
   const key = `${userSub}/${itemId}/${fileName}`;
   const command = new PutObjectCommand({ Bucket: bucketName, Key: key });
 
@@ -258,6 +270,31 @@ async function getUploadUrl(userSub, itemId, fileName) {
     return {
       statusCode: 500,
       body: JSON.stringify({ message: "Error generating upload URL" }),
+    };
+  }
+}
+
+async function deleteFile(userSub, itemId, fileName) {
+  const key = `${userSub}/${itemId}/${fileName}`;
+  const deleteParams = {
+    Bucket: bucketName,
+    Delete: {
+      Objects: [{ Key: key }]
+    }
+  };
+
+  try {
+    await s3Client.send(new DeleteObjectsCommand(deleteParams));
+    return {
+      statusCode: 200,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "File deleted successfully" }),
+    };
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: "Error deleting file" }),
     };
   }
 }
