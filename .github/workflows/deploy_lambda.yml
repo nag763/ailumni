@@ -38,11 +38,11 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies and build
-        working-directory: ./lambda/api
+        working-directory: ./lambda/entries
         run: |
           npm ci
           npm run build
 
       - name: Deploy Lambda function
         run: |
-          aws lambda update-function-code --function-name ${{ env.LAMBDA_FUNCTION_NAME }} --zip-file fileb://lambda/api/api.zip --region ${{ env.AWS_REGION }}
+          aws lambda update-function-code --function-name ${{ env.LAMBDA_FUNCTION_NAME }} --zip-file fileb://lambda/entries/entries.zip --region ${{ env.AWS_REGION }}
