@@ -10,6 +10,7 @@ on:
       - 'lambda/delete-entry/**'
       - 'lambda/get-entry/**'
       - '.github/workflows/deploy_lambda.yml'
+  workflow_dispatch:
 
 permissions:
   id-token: write
