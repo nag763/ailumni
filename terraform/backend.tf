@@ -20,7 +20,7 @@ resource "aws_iam_role" "lambda_exec_role" {
 
 resource "aws_iam_policy" "lambda_exec_policy" {
   name        = "${var.project_name}-lambda-exec-policy"
-  description = "Policy for the retrieve-entry lambda function."
+  description = "Policy for the api lambda function."
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -56,64 +56,13 @@ resource "aws_iam_role_policy_attachment" "lambda_exec_policy" {
 }
 
 # Lambda function
-resource "aws_lambda_function" "retrieve_user" {
-  function_name    = "${var.project_name}-retrieve-entry"
+resource "aws_lambda_function" "api" {
+  function_name    = "${var.project_name}-api"
   role             = aws_iam_role.lambda_exec_role.arn
   handler          = "index.handler"
   runtime          = "nodejs22.x"
-  filename         = "../lambda/retrieve-entry/retrieve-entry.zip"
-  source_code_hash = filebase64sha256("../lambda/retrieve-entry/retrieve-entry.zip")
-
-  environment {
-    variables = {
-      DYNAMODB_TABLE = aws_dynamodb_table.main.name
-    }
-  }
-
-  tags = var.tags
-}
-
-resource "aws_lambda_function" "create_entry" {
-  function_name    = "${var.project_name}-create-entry"
-  role             = aws_iam_role.lambda_exec_role.arn
-  handler          = "index.handler"
-  runtime          = "nodejs22.x"
-  filename         = "../lambda/create-entry/create-entry.zip"
-  source_code_hash = filebase64sha256("../lambda/create-entry/create-entry.zip")
-
-  environment {
-    variables = {
-      DYNAMODB_TABLE = aws_dynamodb_table.main.name
-    }
-  }
-
-  tags = var.tags
-}
-
-resource "aws_lambda_function" "delete_entry" {
-  function_name    = "${var.project_name}-delete-entry"
-  role             = aws_iam_role.lambda_exec_role.arn
-  handler          = "index.handler"
-  runtime          = "nodejs22.x"
-  filename         = "../lambda/delete-entry/delete-entry.zip"
-  source_code_hash = filebase64sha256("../lambda/delete-entry/delete-entry.zip")
-
-  environment {
-    variables = {
-      DYNAMODB_TABLE = aws_dynamodb_table.main.name
-    }
-  }
-
-  tags = var.tags
-}
-
-resource "aws_lambda_function" "get_entry" {
-  function_name    = "${var.project_name}-get-entry"
-  role             = aws_iam_role.lambda_exec_role.arn
-  handler          = "index.handler"
-  runtime          = "nodejs22.x"
-  filename         = "../lambda/get-entry/get-entry.zip"
-  source_code_hash = filebase64sha256("../lambda/get-entry/get-entry.zip")
+  filename         = "../lambda/entries/entries.zip"
+  source_code_hash = filebase64sha256("../lambda/entries/entries.zip")
 
   environment {
     variables = {
@@ -146,38 +95,17 @@ resource "aws_apigatewayv2_stage" "default" {
   tags = var.tags
 }
 
-resource "aws_apigatewayv2_integration" "retrieve_user" {
+resource "aws_apigatewayv2_integration" "api" {
   api_id                 = aws_apigatewayv2_api.http_api.id
   integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.retrieve_user.invoke_arn
-  payload_format_version = "2.0"
-}
-
-resource "aws_apigatewayv2_integration" "create_entry" {
-  api_id                 = aws_apigatewayv2_api.http_api.id
-  integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.create_entry.invoke_arn
-  payload_format_version = "2.0"
-}
-
-resource "aws_apigatewayv2_integration" "delete_entry" {
-  api_id                 = aws_apigatewayv2_api.http_api.id
-  integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.delete_entry.invoke_arn
-  payload_format_version = "2.0"
-}
-
-resource "aws_apigatewayv2_integration" "get_entry" {
-  api_id                 = aws_apigatewayv2_api.http_api.id
-  integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.get_entry.invoke_arn
+  integration_uri        = aws_lambda_function.api.invoke_arn
   payload_format_version = "2.0"
 }
 
 resource "aws_apigatewayv2_route" "get_user" {
   api_id             = aws_apigatewayv2_api.http_api.id
   route_key          = "GET /api/v1/user/entries"
-  target             = "integrations/${aws_apigatewayv2_integration.retrieve_user.id}"
+  target             = "integrations/${aws_apigatewayv2_integration.api.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
@@ -185,7 +113,7 @@ resource "aws_apigatewayv2_route" "get_user" {
 resource "aws_apigatewayv2_route" "create_entry" {
   api_id             = aws_apigatewayv2_api.http_api.id
   route_key          = "POST /api/v1/user/entries"
-  target             = "integrations/${aws_apigatewayv2_integration.create_entry.id}"
+  target             = "integrations/${aws_apigatewayv2_integration.api.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
@@ -193,7 +121,7 @@ resource "aws_apigatewayv2_route" "create_entry" {
 resource "aws_apigatewayv2_route" "delete_entry" {
   api_id             = aws_apigatewayv2_api.http_api.id
   route_key          = "DELETE /api/v1/user/entries/{itemId}"
-  target             = "integrations/${aws_apigatewayv2_integration.delete_entry.id}"
+  target             = "integrations/${aws_apigatewayv2_integration.api.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
@@ -201,7 +129,7 @@ resource "aws_apigatewayv2_route" "delete_entry" {
 resource "aws_apigatewayv2_route" "get_entry" {
   api_id             = aws_apigatewayv2_api.http_api.id
   route_key          = "GET /api/v1/user/entries/{itemId}"
-  target             = "integrations/${aws_apigatewayv2_integration.get_entry.id}"
+  target             = "integrations/${aws_apigatewayv2_integration.api.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
@@ -219,34 +147,10 @@ resource "aws_apigatewayv2_authorizer" "cognito" {
   }
 }
 
-resource "aws_lambda_permission" "api_gateway_retrieve_user" {
-  statement_id  = "AllowAPIGatewayInvokeRetrieveUser"
+resource "aws_lambda_permission" "api_gateway" {
+  statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.retrieve_user.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
-}
-
-resource "aws_lambda_permission" "api_gateway_create_entry" {
-  statement_id  = "AllowAPIGatewayInvokeCreateEntry"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.create_entry.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
-}
-
-resource "aws_lambda_permission" "api_gateway_delete_entry" {
-  statement_id  = "AllowAPIGatewayInvokeDeleteEntry"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.delete_entry.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
-}
-
-resource "aws_lambda_permission" "api_gateway_get_entry" {
-  statement_id  = "AllowAPIGatewayInvokeGetEntry"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.get_entry.function_name
+  function_name = aws_lambda_function.api.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
 }

@@ -25,12 +25,7 @@ resource "aws_ecs_task_definition" "main" {
           hostPort      = var.container_port
         }
       ]
-      environment = [
-        {
-          name  = "NEXT_PUBLIC_API_ENDPOINT"
-          value = aws_apigatewayv2_stage.default.invoke_url
-        }
-    ] }
+      }
 
   ])
 

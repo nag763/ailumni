@@ -1,17 +1,18 @@
 {
-  "name": "create-entry",
+  "name": "api",
   "version": "1.0.0",
-  "description": "Lambda function to create a new entry in DynamoDB",
+  "description": "Lambda function to handle API requests",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "esbuild index.js --bundle --minify --sourcemap --platform=node --target=node22 --outfile=dist/index.js && cd dist && zip -r ../create-entry.zip ."
+    "build": "esbuild index.js --bundle --minify --sourcemap --platform=node --target=node22 --outfile=dist/index.js && cd dist && zip -r ../entries.zip ."
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.844.0",
     "@aws-sdk/lib-dynamodb": "^3.844.0",
+    "@aws-sdk/util-dynamodb": "^3.844.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
