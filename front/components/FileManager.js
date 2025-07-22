@@ -45,7 +45,7 @@ export default function FileManager({ itemId }) {
   const { token } = useCognitoUser();
   const [files, setFiles] = useState([]);
   const [fileToUpload, setFileToUpload] = useState(null);
-  const allowedExtensions = ['txt', 'md', 'json', 'csv', 'xml', 'html', 'css', 'js', 'py', 'java', 'c', 'cpp', 'h', 'hpp', 'php', 'rb', 'go', 'rs', 'swift', 'kt', 'ts', 'tsx', 'jsx', 'vue', 'yml', 'yaml', 'toml', 'ini', 'log'];
+  const allowedExtensions = ['txt', 'md', 'json', 'csv', 'xml', 'html', 'pdf'];
 
   useEffect(() => {
     if (token && itemId) {

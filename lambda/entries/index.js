@@ -245,7 +245,7 @@ async function listFiles(userSub, itemId) {
 }
 
 async function getUploadUrl(userSub, itemId, fileName) {
-  const allowedExtensions = ['txt', 'md', 'json', 'csv', 'xml', 'html', 'css', 'js', 'py', 'java', 'c', 'cpp', 'h', 'hpp', 'php', 'rb', 'go', 'rs', 'swift', 'kt', 'ts', 'tsx', 'jsx', 'vue', 'yml', 'yaml', 'toml', 'ini', 'log'];
+  const allowedExtensions = ['txt', 'md', 'json', 'csv', 'xml', 'html', 'log', 'pdf'];
   const fileExtension = fileName.split('.').pop().toLowerCase();
 
   if (!allowedExtensions.includes(fileExtension)) {
