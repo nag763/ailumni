@@ -1,0 +1,14 @@
+{
+  "devDependencies": {
+    "turbo": "^2.5.5"
+  },
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev --filter=ailumni"
+  },
+  "workspaces": [
+    "front",
+    "lambda/entries"
+  ],
+  "packageManager": "npm@10.8.2"
+}
