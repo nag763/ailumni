@@ -167,6 +167,14 @@ resource "aws_apigatewayv2_route" "get_upload_url" {
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
 
+resource "aws_apigatewayv2_route" "delete_file" {
+  api_id             = aws_apigatewayv2_api.http_api.id
+  route_key          = "DELETE /api/v1/user/entries/{itemId}/files"
+  target             = "integrations/${aws_apigatewayv2_integration.api.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
 
 resource "aws_apigatewayv2_authorizer" "cognito" {
   api_id           = aws_apigatewayv2_api.http_api.id

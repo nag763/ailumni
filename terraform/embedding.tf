@@ -86,7 +86,6 @@ resource "aws_lambda_function" "embedding" {
   environment {
     variables = {
       DYNAMODB_TABLE = aws_dynamodb_table.main.name
-      AWS_REGION     = var.aws_region
     }
   }
 
