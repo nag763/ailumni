@@ -99,6 +99,34 @@ resource "aws_lambda_permission" "s3" {
   source_arn    = aws_s3_bucket.user_content.arn
 }
 
+
+resource "aws_iam_policy" "vector_db_policy" {
+  name        = "${var.project_name}-vector-db-policy"
+  description = "Policy for the vector database S3 bucket."
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "s3vectors:PutVectors"
+        ],
+        Effect   = "Allow"
+        # This part is intentionally left generic as terraform does not support S3 Vectors ARN atm.
+        Resource = "arn:aws:s3vectors:eu-central-1:*:bucket/ailumni*"
+      }
+    ]
+  })
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_embedding_exec_policy" {
+  role       = aws_iam_role.embedding_lambda_exec_role.name
+  policy_arn = aws_iam_policy.vector_db_policy.arn
+}
+
+
 # S3 bucket for vector db
 resource "aws_s3_bucket" "vector_db" {
   bucket = "${var.project_name}-vector-db"
