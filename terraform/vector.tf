@@ -1,4 +1,4 @@
-resource "null_resource" "multiple_commands_create_bash" {
+resource "null_resource" "vector_db_setup" {
 
   triggers = {
     always_run = timestamp()
