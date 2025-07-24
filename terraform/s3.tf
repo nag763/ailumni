@@ -2,6 +2,10 @@ resource "aws_s3_bucket" "user_content" {
   bucket = var.s3_bucket_name
 
   tags = var.tags
+}
+
+resource "aws_s3_bucket_cors_configuration" "user_content_cors" {
+  bucket = aws_s3_bucket.user_content.id
 
   cors_rule {
     allowed_headers = ["*"]
