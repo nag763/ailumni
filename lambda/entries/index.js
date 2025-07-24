@@ -112,6 +112,7 @@ async function createEntry(userSub, { label }) {
       item_id: itemId,
       label: label,
       created_at: new Date().toISOString(),
+      files: {},
     },
   };
 

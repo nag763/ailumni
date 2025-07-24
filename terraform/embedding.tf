@@ -55,6 +55,13 @@ resource "aws_iam_policy" "embedding_lambda_exec_policy" {
         ]
         Effect   = "Allow"
         Resource = "arn:aws:logs:*:*:*"
+      },
+      {
+        Action = [
+          "dynamodb:UpdateItem"
+        ]
+        Effect   = "Allow"
+        Resource = aws_dynamodb_table.main.arn
       }
     ]
   })
@@ -75,6 +82,13 @@ resource "aws_lambda_function" "embedding" {
   runtime          = "python3.13"
   filename         = "../lambda/embedding/embedding.zip"
   source_code_hash = filebase64sha256("../lambda/embedding/embedding.zip")
+
+  environment {
+    variables = {
+      DYNAMODB_TABLE = aws_dynamodb_table.main.name
+      AWS_REGION     = var.aws_region
+    }
+  }
 
   tags = var.tags
 }
