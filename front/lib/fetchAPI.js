@@ -38,6 +38,7 @@ const fetchAPI = async (method, endpoint, data = null, token = null) => {
       switch (error.status) {
         case 400:
           toast.error(error.message);
+          return;
           break;
         case 401:
         case 403:

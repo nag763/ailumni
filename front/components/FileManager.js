@@ -45,7 +45,6 @@ export default function FileManager({ itemId }) {
   const { token } = useCognitoUser();
   const [files, setFiles] = useState([]);
   const [fileToUpload, setFileToUpload] = useState(null);
-  const allowedExtensions = ['txt', 'md', 'json', 'csv', 'xml', 'html', 'pdf'];
 
   useEffect(() => {
     if (token && itemId) {
@@ -56,14 +55,7 @@ export default function FileManager({ itemId }) {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const fileExtension = file.name.split('.').pop().toLowerCase();
-      if (allowedExtensions.includes(fileExtension)) {
-        setFileToUpload(file);
-      } else {
-        alert(`File type .${fileExtension} is not allowed.`);
-        setFileToUpload(null);
-        e.target.value = ''; // Clear the input
-      }
+      setFileToUpload(file);
     }
   };
 
