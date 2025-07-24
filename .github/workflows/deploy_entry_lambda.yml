@@ -1,12 +1,12 @@
-name: Deploy Lambda function to AWS
+name: Deploy Lambda Entry API function to AWS
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'lambda/api/**'
-      - '.github/workflows/deploy_lambda.yml'
+      - 'lambda/entry/**'
+      - '.github/workflows/deploy_entry_lambda.yml'
   workflow_dispatch:
 
 permissions:
