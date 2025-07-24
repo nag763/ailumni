@@ -28,7 +28,8 @@ def lambda_handler(event, context):
 
 
 
-    logger.info(f"Content of {key}: {content}")
+    logger.info(f"Content of {key}: {content[:30]}")
+
     body = json.dumps({"inputText": content})
     # Call Bedrock's embedding API
     response = bedrock.invoke_model(
