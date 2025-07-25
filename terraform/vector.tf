@@ -1,12 +1,12 @@
 resource "null_resource" "vector_db_setup" {
 
   provisioner "local-exec" {
-    when = create
+    when    = create
     command = "aws s3vectors create-vector-bucket --vector-bucket-name 'ailumni-vector-db' && aws s3vectors create-index --vector-bucket-name 'ailumni-vector-db' --index-name 'ailumni-vector-index' --dimension 1024 --distance-metric 'cosine' --data-type float32"
   }
 
   provisioner "local-exec" {
-    when = destroy
+    when    = destroy
     command = "aws s3vectors delete-index --vector-bucket-name 'ailumni-vector-db' --index-name 'ailumni-vector-index' && aws s3vectors delete-vector-bucket --vector-bucket-name ailumni-vector-db"
   }
 }

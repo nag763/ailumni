@@ -124,7 +124,7 @@ resource "aws_iam_policy" "vector_db_policy" {
         Action = [
           "s3vectors:PutVectors"
         ],
-        Effect   = "Allow"
+        Effect = "Allow"
         # This part is intentionally left generic as terraform does not support S3 Vectors ARN atm.
         Resource = "arn:aws:s3vectors:eu-central-1:*:bucket/ailumni*"
       }

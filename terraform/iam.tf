@@ -77,6 +77,13 @@ resource "aws_iam_policy" "github_actions" {
         Effect   = "Allow"
         Resource = aws_lambda_function.embedding.arn
       },
+      {
+        Action = [
+          "lambda:UpdateFunctionCode"
+        ]
+        Effect   = "Allow"
+        Resource = aws_lambda_function.agent.arn
+      },
 
     ]
   })

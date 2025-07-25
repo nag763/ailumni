@@ -1,0 +1,49 @@
+name: Deploy Agent Lambda function to AWS
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'lambda/agent/**'
+      - '.github/workflows/deploy_agent_lambda.yml'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-central-1
+  LAMBDA_FUNCTION_NAME: ailumni-front-agent
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Agent Lambda
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Output requirements
+        run: uv pip install --python-platform linux --python 3.13 -r pyproject.toml --target .
+        working-directory: lambda/agent
+
+      - name: Create zip file
+        working-directory: lambda/agent
+        run: zip -r agent.zip .
+
+      - name: Deploy Lambda function
+        working-directory: lambda/agent
+        run: |
+          aws lambda update-function-code --function-name ${{ env.LAMBDA_FUNCTION_NAME }} --zip-file fileb://agent.zip --region ${{ env.AWS_REGION }}
