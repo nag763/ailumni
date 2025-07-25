@@ -36,7 +36,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Output requirements
-        run: uv pip install --python-platform linux --python 3.13 -r pyproject.toml --target .
+        run: uv pip install --python-platform linux --python 3.12 -r pyproject.toml --target .
         working-directory: lambda/agent
 
       - name: Create zip file
