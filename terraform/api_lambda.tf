@@ -1,26 +1,20 @@
-# IAM role and policy for the lambda function
-resource "aws_iam_role" "lambda_exec_role" {
-  name = "${var.project_name}-lambda-exec-role"
+module "api_lambda" {
+  source = "./modules/lambda"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
-    ]
-  })
-
+  function_name = "${var.project_name}-api"
+  handler       = "index.handler"
+  runtime       = "nodejs22.x"
+  filename      = "../lambda/entries/entries.zip"
+  environment_variables = {
+    DYNAMODB_TABLE = aws_dynamodb_table.main.name
+    S3_BUCKET_NAME = aws_s3_bucket.user_content.id
+  }
   tags = var.tags
 }
 
-resource "aws_iam_policy" "lambda_exec_policy" {
-  name        = "${var.project_name}-lambda-exec-policy"
-  description = "Policy for the api lambda function."
+resource "aws_iam_policy" "api_lambda_additional_policy" {
+  name        = "${var.project_name}-api-lambda-additional-policy"
+  description = "Additional policy for the API lambda function."
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -50,15 +44,6 @@ resource "aws_iam_policy" "lambda_exec_policy" {
         ]
         Effect   = "Allow"
         Resource = aws_dynamodb_table.main.arn
-      },
-      {
-        Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:logs:*:*:*"
       }
     ]
   })
@@ -66,26 +51,7 @@ resource "aws_iam_policy" "lambda_exec_policy" {
   tags = var.tags
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_exec_policy" {
-  role       = aws_iam_role.lambda_exec_role.name
-  policy_arn = aws_iam_policy.lambda_exec_policy.arn
-}
-
-# Lambda function
-resource "aws_lambda_function" "api" {
-  function_name    = "${var.project_name}-api"
-  role             = aws_iam_role.lambda_exec_role.arn
-  handler          = "index.handler"
-  runtime          = "nodejs22.x"
-  filename         = "../lambda/entries/entries.zip"
-  source_code_hash = filebase64sha256("../lambda/entries/entries.zip")
-
-  environment {
-    variables = {
-      DYNAMODB_TABLE = aws_dynamodb_table.main.name
-      S3_BUCKET_NAME = aws_s3_bucket.user_content.id
-    }
-  }
-
-  tags = var.tags
+resource "aws_iam_role_policy_attachment" "api_lambda_additional_policy_attachment" {
+  role       = module.api_lambda.lambda_iam_role_name
+  policy_arn = aws_iam_policy.api_lambda_additional_policy.arn
 }

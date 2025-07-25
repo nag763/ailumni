@@ -68,21 +68,21 @@ resource "aws_iam_policy" "github_actions" {
           "lambda:UpdateFunctionCode"
         ]
         Effect   = "Allow"
-        Resource = aws_lambda_function.api.arn
+        Resource = module.api_lambda.lambda_function_arn
       },
       {
         Action = [
           "lambda:UpdateFunctionCode"
         ]
         Effect   = "Allow"
-        Resource = aws_lambda_function.embedding.arn
+        Resource = module.embedding_lambda.lambda_function_arn
       },
       {
         Action = [
           "lambda:UpdateFunctionCode"
         ]
         Effect   = "Allow"
-        Resource = aws_lambda_function.agent.arn
+        Resource = module.agent_lambda.lambda_function_arn
       },
 
     ]

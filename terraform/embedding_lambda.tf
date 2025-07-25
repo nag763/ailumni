@@ -1,26 +1,19 @@
-# IAM role and policy for the embedding lambda function
-resource "aws_iam_role" "embedding_lambda_exec_role" {
-  name = "${var.project_name}-embedding-lambda-exec-role"
+module "embedding_lambda" {
+  source = "./modules/lambda"
 
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-      }
-    ]
-  })
-
+  function_name = "${var.project_name}-embedding"
+  handler       = "lambda_function.lambda_handler"
+  runtime       = "python3.13"
+  filename      = "../lambda/embedding/embedding.zip"
+  environment_variables = {
+    DYNAMODB_TABLE = aws_dynamodb_table.main.name
+  }
   tags = var.tags
 }
 
-resource "aws_iam_policy" "embedding_lambda_exec_policy" {
-  name        = "${var.project_name}-embedding-lambda-exec-policy"
-  description = "Policy for the embedding lambda function."
+resource "aws_iam_policy" "embedding_lambda_additional_policy" {
+  name        = "${var.project_name}-embedding-lambda-additional-policy"
+  description = "Additional policy for the embedding lambda function."
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -49,15 +42,6 @@ resource "aws_iam_policy" "embedding_lambda_exec_policy" {
       },
       {
         Action = [
-          "logs:CreateLogGroup",
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Effect   = "Allow"
-        Resource = "arn:aws:logs:*:*:*"
-      },
-      {
-        Action = [
           "dynamodb:UpdateItem"
         ]
         Effect   = "Allow"
@@ -69,27 +53,9 @@ resource "aws_iam_policy" "embedding_lambda_exec_policy" {
   tags = var.tags
 }
 
-resource "aws_iam_role_policy_attachment" "embedding_lambda_exec_policy" {
-  role       = aws_iam_role.embedding_lambda_exec_role.name
-  policy_arn = aws_iam_policy.embedding_lambda_exec_policy.arn
-}
-
-# Lambda function
-resource "aws_lambda_function" "embedding" {
-  function_name    = "${var.project_name}-embedding"
-  role             = aws_iam_role.embedding_lambda_exec_role.arn
-  handler          = "lambda_function.lambda_handler"
-  runtime          = "python3.13"
-  filename         = "../lambda/embedding/embedding.zip"
-  source_code_hash = filebase64sha256("../lambda/embedding/embedding.zip")
-
-  environment {
-    variables = {
-      DYNAMODB_TABLE = aws_dynamodb_table.main.name
-    }
-  }
-
-  tags = var.tags
+resource "aws_iam_role_policy_attachment" "embedding_lambda_additional_policy_attachment" {
+  role       = module.embedding_lambda.lambda_iam_role_name
+  policy_arn = aws_iam_policy.embedding_lambda_additional_policy.arn
 }
 
 # S3 bucket notification
@@ -97,7 +63,7 @@ resource "aws_s3_bucket_notification" "user_content_notification" {
   bucket = aws_s3_bucket.user_content.id
 
   lambda_function {
-    lambda_function_arn = aws_lambda_function.embedding.arn
+    lambda_function_arn = module.embedding_lambda.lambda_function_arn
     events              = ["s3:ObjectCreated:*"]
   }
 
@@ -107,7 +73,7 @@ resource "aws_s3_bucket_notification" "user_content_notification" {
 resource "aws_lambda_permission" "s3" {
   statement_id  = "AllowS3Invoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.embedding.function_name
+  function_name = module.embedding_lambda.lambda_function_name
   principal     = "s3.amazonaws.com"
   source_arn    = aws_s3_bucket.user_content.arn
 }
