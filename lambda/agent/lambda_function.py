@@ -30,7 +30,7 @@ def lambda_handler(event, context):
                 })
             }
         case _:
-            logloggingger.warning("Unhandled HTTP method: %s", http_method)
+            loggingger.warning("Unhandled HTTP method: %s", http_method)
             return {
                 "statusCode": 405,
                 "body": json.dumps({"error": "Method Not Allowed"})
