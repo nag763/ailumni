@@ -14,7 +14,7 @@ def lambda_handler(event, context):
                     "Access-Control-Allow-Headers": "Content-Type"
                 }
             }
-        case "GET":
+        case "POST":
             return {
                 "statusCode": 200,
                 "body": "Hello from the agent lambda function!"
