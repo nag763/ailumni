@@ -20,7 +20,7 @@ resource "aws_iam_policy" "vector_db_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_embedding_exec_policy" {
-  role       = aws_iam_role.embedding_lambda_exec_role.name
+  role       = module.embedding_lambda.lambda_iam_role_name
   policy_arn = aws_iam_policy.vector_db_policy.arn
 }
 
