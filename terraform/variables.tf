@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "project_name" {
   description = "The name of the project."
   type        = string
-  default     = "ailumni-front"
+  default     = "ailumni"
 }
 
 variable "image_tag" {
