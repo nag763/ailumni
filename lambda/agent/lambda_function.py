@@ -11,7 +11,9 @@ logger.setLevel("INFO")
 
 def lambda_handler(event, context):
     logger.info("Received event: %s", json.dumps(event))
-    http_method = event.get("httpMethod", "GET")
+    http_method = event.get("httpMethod") or event.get("requestContext", {}).get(
+        "http", {}
+    ).get("method")
     logger.info("HTTP method: %s", http_method)
 
     match http_method:
