@@ -1,3 +1,4 @@
+import json
 import os
 
 cors_allow_origin = os.getenv("CORS_ALLOW_ORIGIN", "*")
@@ -17,5 +18,7 @@ def lambda_handler(event, context):
         case "POST":
             return {
                 "statusCode": 200,
-                "body": "Hello from the agent lambda function!"
+                "body": json.dumps({
+                    "message": "Hello from the agent lambda function!"
+                })
             }
