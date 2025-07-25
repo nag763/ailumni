@@ -127,3 +127,20 @@ export const fetchEntry = (token, itemId, setEntry) => {
       console.error(err);
     });
 };
+
+export const callAgent = async (token, message, itemId) => {
+  if (!token || !itemId) return;
+
+  const data = {
+    session_id: itemId,
+    message: message,
+  }
+
+  try {
+    const response = await fetchAPI('POST', '/api/v1/agent', data, token);
+    return response;
+  } catch (error) {
+    console.error("Failed to call agent:", error);
+    throw error;
+  }
+};
