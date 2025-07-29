@@ -3,7 +3,7 @@ module "agent_lambda" {
 
   function_name = "${var.project_name}-agent"
   handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.13"
+  runtime       = "python3.12"
   filename      = "../lambda/agent/agent.zip"
   environment_variables = {
     CORS_ALLOW_ORIGIN = "*"

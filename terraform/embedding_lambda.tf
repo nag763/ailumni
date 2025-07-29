@@ -3,7 +3,7 @@ module "embedding_lambda" {
 
   function_name = "${var.project_name}-embedding"
   handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.13"
+  runtime       = "python3.12"
   filename      = "../lambda/embedding/embedding.zip"
   environment_variables = {
     DYNAMODB_TABLE = aws_dynamodb_table.main.name
