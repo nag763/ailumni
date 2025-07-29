@@ -2,6 +2,11 @@ import json
 import os
 import logging
 
+from pydantic import BaseModel, Field
+
+class AgentMessage(BaseModel):
+    message: str = Field(..., max_length=300)
+
 
 cors_allow_origin = os.getenv("CORS_ALLOW_ORIGIN", "*")
 
@@ -29,10 +34,18 @@ def lambda_handler(event, context):
             }
         case "POST":
             logger.info("Handling POST request")
+            try:
+                agent_message = AgentMessage.model_validate_json(event.get("body", "{}"))
+            except ValueError as ve:
+                logger.warning("Validation error while parsing body")
+                return {
+                    "statusCode": 400,
+                    "body": str(ve)
+                }
             return {
                 "statusCode": 200,
                 "body": json.dumps({
-                    "message": "Hello from the agent lambda function!"
+                    "message": f"Hello from the agent lambda function! You said : {agent_message.message}"
                 })
             }
         case _:
