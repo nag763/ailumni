@@ -90,9 +90,9 @@ def lambda_handler(event, context):
                 returnDistance=True,
                 returnMetadata=True,
             )
-            parsed_query = json.loads(query["vectors"])
+            vectors = query["vectors"]
             filtered_vectors = [
-                vector for vector in parsed_query if vector.get("distance", 0) < 0.5
+                vector for vector in vectors if vector.get("distance", 0) < 0.5
             ]
             
             if not filtered_vectors:
