@@ -49,18 +49,15 @@ resource "aws_iam_policy" "agent_lambda_additional_policy" {
         Resource = "${aws_s3_bucket.user_content.arn}/*"
       },
       {
+        Effect = "Allow"
         Action = [
-          "bedrock:InvokeModel"
+          "bedrock:InvokeModel",
+          "bedrock:InvokeModelWithResponseStream"
         ]
-        Effect   = "Allow"
-        Resource = "arn:aws:bedrock:${var.aws_region}::foundation-model/*"
-      },
-      {
-        Action = [
-          "s3vectors:PutVectors"
+        Resource = [
+          "arn:aws:bedrock:eu-*:*:inference-profile/*",
+          "arn:aws:bedrock:eu-*::foundation-model/*"
         ]
-        Effect   = "Allow"
-        Resource = "${aws_s3_bucket.vector_db.arn}/*"
       },
       {
         Action = [
@@ -69,7 +66,7 @@ resource "aws_iam_policy" "agent_lambda_additional_policy" {
         ],
         Effect = "Allow"
         # This is intentionally left generic as terraform does not support S3 Vectors ARN atm.
-        Resource = "arn:aws:s3vectors:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:bucket/${aws_s3_bucket.vector_db.id}/index/*"
+        Resource = "arn:aws:s3vectors:${var.aws_region}:${data.aws_caller_identity.current.account_id}:bucket/${aws_s3_bucket.vector_db.id}/index/*"
       }
     ]
   })
