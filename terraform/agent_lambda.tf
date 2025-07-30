@@ -57,12 +57,20 @@ resource "aws_iam_policy" "agent_lambda_additional_policy" {
       },
       {
         Action = [
-          "s3vectors:PutVectors",
-          "s3vectors:QueryVectors"
+          "s3vectors:PutVectors"
         ]
         Effect   = "Allow"
         Resource = "${aws_s3_bucket.vector_db.arn}/*"
       },
+      {
+        Action = [
+          "s3vectors:GetVectors",
+          "s3vectors:QueryVectors"
+        ],
+        Effect = "Allow"
+        # This is intentionally left generic as terraform does not support S3 Vectors ARN atm.
+        Resource = "arn:aws:s3vectors:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:bucket/${aws_s3_bucket.vector_db.id}/index/*"
+      }
     ]
   })
 
