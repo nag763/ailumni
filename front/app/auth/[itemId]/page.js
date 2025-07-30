@@ -65,7 +65,7 @@ export default function ItemDetailsPage() {
           <div className="border-b border-gray-200 p-4">
             <h3 className="text-lg font-semibold text-gray-800">Chat</h3>
           </div>
-          <ChatHistory messages={messages} />
+          <ChatHistory messages={messages} isResponding={isResponding} />
           <ChatInput onSendMessage={handleSendMessage} disabled={isResponding} />
         </div>
       </div>
