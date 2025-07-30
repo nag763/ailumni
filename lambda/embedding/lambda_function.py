@@ -50,7 +50,7 @@ def lambda_handler(event, context):
 
         # Create S3Vectors client
 
-        # # Insert vector embedding
+        # Insert vector embedding
         s3vectors.put_vectors(
             vectorBucketName="ailumni-vector-db",
             indexName="ailumni-vector-index",
@@ -58,7 +58,7 @@ def lambda_handler(event, context):
                 {
                     "key": key,
                     "data": {"float32": embedding},
-                    "metadata": {"key": key, "source": bucket},
+                    "metadata": {"key": key, "source": bucket, "user_sub": user_sub},
                 },
             ],
         )
