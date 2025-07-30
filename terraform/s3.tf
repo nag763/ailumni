@@ -1,5 +1,7 @@
 resource "aws_s3_bucket" "user_content" {
-  bucket = var.s3_bucket_name
+  bucket        = var.s3_bucket_name
+  force_destroy = true
+
 
   tags = var.tags
 }

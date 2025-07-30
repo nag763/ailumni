@@ -29,5 +29,8 @@ resource "aws_iam_role_policy_attachment" "lambda_embedding_exec_policy" {
 resource "aws_s3_bucket" "vector_db" {
   bucket = "${var.project_name}-vector-db"
 
+
+  force_destroy = true
+
   tags = var.tags
 }
