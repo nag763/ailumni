@@ -16,6 +16,7 @@ export default function ItemDetailsPage() {
   const [entry, setEntry] = useState(null);
   const { itemId } = useParams();
   const [messages, setMessages] = useState([]);
+  const [isResponding, setIsResponding] = useState(false);
 
   useEffect(() => {
     if (token && itemId) {
@@ -25,8 +26,10 @@ export default function ItemDetailsPage() {
 
   const handleSendMessage = async (message) => {
     setMessages((prevMessages) => [...prevMessages, { text: message, isUser: true }]);
+    setIsResponding(true);
     const response = await callAgent(token, message, itemId);
     setMessages((prevMessages) => [...prevMessages, { text: response.message, isUser: false }]);
+    setIsResponding(false);
   };
 
   const router = useRouter();
@@ -63,7 +66,7 @@ export default function ItemDetailsPage() {
             <h3 className="text-lg font-semibold text-gray-800">Chat</h3>
           </div>
           <ChatHistory messages={messages} />
-          <ChatInput onSendMessage={handleSendMessage} />
+          <ChatInput onSendMessage={handleSendMessage} disabled={isResponding} />
         </div>
       </div>
     </div>
