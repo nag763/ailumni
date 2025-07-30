@@ -6,6 +6,8 @@ import logging
 
 aws_region = os.getenv("AWS_REGION", "eu-central-1")
 table_name = os.getenv("DYNAMODB_TABLE")
+vector_db_name = os.getenv("VECTOR_DB", "ailumni-vector-db")
+vector_db_index = os.getenv("VECTOR_DB_INDEX", "ailumni-vector-index")
 
 bedrock = boto3.client("bedrock-runtime", region_name=aws_region)
 dynamodb = boto3.resource("dynamodb", region_name=aws_region)
@@ -52,8 +54,8 @@ def lambda_handler(event, context):
 
         # Insert vector embedding
         s3vectors.put_vectors(
-            vectorBucketName="ailumni-vector-db",
-            indexName="ailumni-vector-index",
+            vectorBucketName=vector_db_name,
+            indexName=vector_db_index,
             vectors=[
                 {
                     "key": key,

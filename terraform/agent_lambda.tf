@@ -43,11 +43,26 @@ resource "aws_iam_policy" "agent_lambda_additional_policy" {
     Statement = [
       {
         Action = [
+          "s3:GetObject"
+        ]
+        Effect   = "Allow"
+        Resource = "${aws_s3_bucket.user_content.arn}/*"
+      },
+      {
+        Action = [
           "bedrock:InvokeModel"
         ]
         Effect   = "Allow"
-        Resource = "arn:aws:bedrock:eu-central-1::foundation-model/*"
-      }
+        Resource = "arn:aws:bedrock:${var.aws_region}::foundation-model/*"
+      },
+      {
+        Action = [
+          "s3vectors:PutVectors",
+          "s3vectors:QueryVectors"
+        ]
+        Effect   = "Allow"
+        Resource = "${aws_s3_bucket.vector_db.arn}/*"
+      },
     ]
   })
 
