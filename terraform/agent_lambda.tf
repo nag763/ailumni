@@ -43,7 +43,8 @@ resource "aws_iam_policy" "agent_lambda_additional_policy" {
     Statement = [
       {
         Action = [
-          "s3:GetObject"
+          "s3:GetObject",
+          "s3:DeleteObject"
         ]
         Effect   = "Allow"
         Resource = "${aws_s3_bucket.user_content.arn}/*"
