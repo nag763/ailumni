@@ -16,8 +16,8 @@ permissions:
 env:
   AWS_REGION: eu-central-1
   ECR_REPOSITORY: ailumni
-  ECS_CLUSTER: ailumni-front-cluster
-  ECS_SERVICE: ailumni-front-service
+  ECS_CLUSTER: ailumni-cluster
+  ECS_SERVICE: ailumni-service
 
 jobs:
   build-and-push:
