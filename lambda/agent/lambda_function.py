@@ -98,7 +98,7 @@ def lambda_handler(event, context):
                 logger.info("No relevant vectors found for the query")
                 return {
                     "statusCode": 200,
-                    "body": json.dumps({"message": "It seems like the retrieval failed. Try agian by improving your query or adding documents to your set."}),
+                    "body": json.dumps({"message": "It seems like the retrieval failed. Try again by improving your query or adding documents to your set."}),
                 }
             logger.info("Found %d relevant vectors", len(filtered_vectors))
             
