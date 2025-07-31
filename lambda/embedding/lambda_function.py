@@ -81,11 +81,13 @@ def lambda_handler(event, context):
             )
             response_body = json.loads(response["body"].read())
             embedding = response_body["embedding"]
-            vectors.append({
-                "key": f'{key}#{i}',
-                "data": {"float32": embedding},
-                "metadata": {"key": key, "source": bucket, "user_sub": user_sub, "chunk_index": i},
-            })
+            vectors.append(
+                {
+                    "key": f"{key}#{i}",
+                    "data": {"float32": embedding},
+                    "metadata": {"user_sub": user_sub, "chunk_index": i},
+                }
+            )
 
         # Insert vector embedding
         s3vectors.put_vectors(
@@ -107,6 +109,19 @@ def lambda_handler(event, context):
         )
         logger.info(f"Successfully indexed {key} and updated DynamoDB.")
 
+        # For each chunk, create a DynamoDB item with the chunk key and text
+        for i, text in enumerate(texts):
+            chunk_key = f"{key}#{i}"
+            table.put_item(
+                Item={
+                    "user_sub": user_sub,
+                    "item_id": item_id,
+                    "chunk_key": chunk_key,
+                    "text": text,
+                }
+            )
+            logger.info(f"Stored chunk {chunk_key} in DynamoDB.")
+
     except Exception as e:
         logger.error(f"Error during indexing for {key}: {e}")
         # Update DynamoDB item to indicate failed indexing
@@ -120,3 +135,22 @@ def lambda_handler(event, context):
             ExpressionAttributeValues={":status": {"indexed": False, "error": str(e)}},
         )
         raise e
+    finally:
+        # Delete the S3 object after processing
+        s3.delete_object(Bucket=bucket, Key=key)
+        logger.info(f"Deleted S3 object {key} after processing.")
+        # Update DynamoDB item to indicate S3 object deletion
+        table.update_item(
+            Key={"user_sub": user_sub, "item_id": item_id},
+            UpdateExpression="SET #files.#file_name = :status",
+            ExpressionAttributeNames={
+                "#files": "files",
+                "#file_name": file_name,
+            },
+            ExpressionAttributeValues={":status": {"indexed": False, "deleted": True}},
+        )
+        logger.info(f"Updated DynamoDB for {key} to indicate S3 object deletion.")
+        return {
+            "statusCode": 200,
+            "body": json.dumps({"message": f"Successfully processed {key}."}),
+        }
