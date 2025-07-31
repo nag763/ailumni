@@ -83,7 +83,7 @@ def lambda_handler(event, context):
             embedding = response_body["embedding"]
             vectors.append(
                 {
-                    "key": f"{key}#{i}",
+                    "key": f"{item_id}#{i}",
                     "data": {"float32": embedding},
                     "metadata": {"user_sub": user_sub, "chunk_index": i},
                 }
@@ -101,11 +101,10 @@ def lambda_handler(event, context):
 
         # For each chunk, create a DynamoDB item with the chunk key and text
         for i, text in enumerate(texts):
-            chunk_key = f"{key}#{i}"
             table.put_item(
                 Item={
                     "user_sub": user_sub,
-                    "item_id": chunk_key,
+                    "item_id": item_id,
                     "text": text,
                 }
             )
