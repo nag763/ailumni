@@ -104,7 +104,7 @@ def lambda_handler(event, context):
             table.put_item(
                 Item={
                     "user_sub": user_sub,
-                    "item_id": f"key#{i}",
+                    "item_id": f"{key}#{i}",
                     "text": text,
                 }
             )
