@@ -97,16 +97,6 @@ def lambda_handler(event, context):
         logger.info(
             f"Indexed {len(vectors)} text chunks from {key} into vector database."
         )
-        # Update DynamoDB item to indicate successful indexing
-        table.update_item(
-            Key={"user_sub": user_sub, "item_id": item_id},
-            UpdateExpression="SET #files.#file_name = :status",
-            ExpressionAttributeNames={
-                "#files": "files",
-                "#file_name": file_name,
-            },
-            ExpressionAttributeValues={":status": {"indexed": True}},
-        )
         logger.info(f"Successfully indexed {key} and updated DynamoDB.")
 
         # For each chunk, create a DynamoDB item with the chunk key and text
@@ -115,8 +105,7 @@ def lambda_handler(event, context):
             table.put_item(
                 Item={
                     "user_sub": user_sub,
-                    "item_id": item_id,
-                    "chunk_key": chunk_key,
+                    "item_id": chunk_key,
                     "text": text,
                 }
             )
@@ -147,7 +136,7 @@ def lambda_handler(event, context):
                 "#files": "files",
                 "#file_name": file_name,
             },
-            ExpressionAttributeValues={":status": {"indexed": False, "deleted": True}},
+            ExpressionAttributeValues={":status": { "deleted": True}},
         )
         logger.info(f"Updated DynamoDB for {key} to indicate S3 object deletion.")
         return {
