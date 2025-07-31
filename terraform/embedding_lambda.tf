@@ -20,10 +20,18 @@ resource "aws_iam_policy" "embedding_lambda_additional_policy" {
     Statement = [
       {
         Action = [
-          "s3:GetObject"
+          "s3:GetObject",
+          "s3:DeleteObject"
         ]
         Effect   = "Allow"
         Resource = "${aws_s3_bucket.user_content.arn}/*"
+      },
+      {
+        Action = [
+          "dynamodb:PutItem",
+        ]
+        Effect   = "Allow"
+        Resource = aws_dynamodb_table.main.arn
       },
       {
         Action = [
