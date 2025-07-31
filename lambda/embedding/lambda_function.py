@@ -4,14 +4,21 @@ import json
 import os
 import logging
 
+
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 aws_region = os.getenv("AWS_REGION", "eu-central-1")
 table_name = os.getenv("DYNAMODB_TABLE")
 vector_db_name = os.getenv("VECTOR_DB", "ailumni-vector-db")
 vector_db_index = os.getenv("VECTOR_DB_INDEX", "ailumni-vector-index")
+chunk_size = int(os.getenv("CHUNK_SIZE", 300))
 
 bedrock = boto3.client("bedrock-runtime", region_name=aws_region)
 dynamodb = boto3.resource("dynamodb", region_name=aws_region)
 s3vectors = boto3.client("s3vectors", region_name="eu-central-1")
+
+splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=0)
+
 
 def lambda_handler(event, context):
     logger = logging.getLogger()
@@ -41,30 +48,53 @@ def lambda_handler(event, context):
     table = dynamodb.Table(table_name)
 
     try:
-        body = json.dumps({"inputText": content})
-        # Call Bedrock's embedding API
-        response = bedrock.invoke_model(
-            modelId="amazon.titan-embed-text-v2:0", body=body  # Titan embedding model
-        )
-        # Parse response
-        response_body = json.loads(response["body"].read())
-        embedding = response_body["embedding"]
+        texts = splitter.split_text(content)
+        if not texts:
+            logger.warning(f"No text found in the content of {key}. Skipping indexing.")
+            # Delete the S3 object if no text is found
+            s3.delete_object(Bucket=bucket, Key=key)
+            # Update DynamoDB item to indicate no text found
+            table.update_item(
+                Key={"user_sub": user_sub, "item_id": item_id},
+                UpdateExpression="SET #files.#file_name = :status",
+                ExpressionAttributeNames={
+                    "#files": "files",
+                    "#file_name": file_name,
+                },
+                ExpressionAttributeValues={
+                    ":status": {"indexed": False, "error": "No text found"}
+                },
+            )
+            logger.info(
+                f"Deleted S3 object {key} and updated DynamoDB due to no text found."
+            )
+            return
 
-        # Create S3Vectors client
+        vectors = []
+
+        for i, text in enumerate(texts):
+            logger.info(f"Processing text chunk: {text[:30]}...")
+            body = json.dumps({"inputText": text})
+            response = bedrock.invoke_model(
+                modelId="amazon.titan-embed-text-v2:0",
+                body=body,  # Titan embedding model
+            )
+            response_body = json.loads(response["body"].read())
+            embedding = response_body["embedding"]
+            vectors += {
+                "key": key,
+                "data": {"float32": embedding, "chunk_index": i},
+                "metadata": {"key": key, "source": bucket, "user_sub": user_sub},
+            }
 
         # Insert vector embedding
         s3vectors.put_vectors(
-            vectorBucketName=vector_db_name,
-            indexName=vector_db_index,
-            vectors=[
-                {
-                    "key": key,
-                    "data": {"float32": embedding},
-                    "metadata": {"key": key, "source": bucket, "user_sub": user_sub},
-                },
-            ],
+            vectorBucketName=vector_db_name, indexName=vector_db_index, vectors=vectors
         )
 
+        logger.info(
+            f"Indexed {len(vectors)} text chunks from {key} into vector database."
+        )
         # Update DynamoDB item to indicate successful indexing
         table.update_item(
             Key={"user_sub": user_sub, "item_id": item_id},
@@ -87,8 +117,6 @@ def lambda_handler(event, context):
                 "#files": "files",
                 "#file_name": file_name,
             },
-            ExpressionAttributeValues={
-                ":status": {"indexed": False, "error": str(e)}
-            },
+            ExpressionAttributeValues={":status": {"indexed": False, "error": str(e)}},
         )
         raise e
