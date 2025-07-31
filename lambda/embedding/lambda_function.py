@@ -83,9 +83,9 @@ def lambda_handler(event, context):
             embedding = response_body["embedding"]
             vectors.append(
                 {
-                    "key": f"{item_id}#{i}",
+                    "key": f"{key}#{i}",
                     "data": {"float32": embedding},
-                    "metadata": {"user_sub": user_sub, "chunk_index": i},
+                    "metadata": {"user_sub": user_sub, "chunk_index": i, "item_id": item_id, "file_name": file_name},
                 }
             )
 
@@ -104,12 +104,11 @@ def lambda_handler(event, context):
             table.put_item(
                 Item={
                     "user_sub": user_sub,
-                    "item_id": item_id,
+                    "item_id": f"key#{i}",
                     "text": text,
                 }
             )
-            logger.info(f"Stored chunk {chunk_key} in DynamoDB.")
-
+            
     except Exception as e:
         logger.error(f"Error during indexing for {key}: {e}")
         # Update DynamoDB item to indicate failed indexing
