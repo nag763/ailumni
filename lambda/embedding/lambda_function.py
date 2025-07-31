@@ -135,6 +135,7 @@ def lambda_handler(event, context):
                 "#file_name": file_name,
             },
             ExpressionAttributeValues={":status": { "deleted": True}},
+            ConditionExpression="attribute_exists(files)"
         )
         logger.info(f"Updated DynamoDB for {key} to indicate S3 object deletion.")
         return {
