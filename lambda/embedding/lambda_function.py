@@ -81,11 +81,11 @@ def lambda_handler(event, context):
             )
             response_body = json.loads(response["body"].read())
             embedding = response_body["embedding"]
-            vectors += {
+            vectors.append({
                 "key": f'{key}#{i}',
                 "data": {"float32": embedding},
                 "metadata": {"key": key, "source": bucket, "user_sub": user_sub, "chunk_index": i},
-            }
+            })
 
         # Insert vector embedding
         s3vectors.put_vectors(
