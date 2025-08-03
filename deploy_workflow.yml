@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Get a list of all workflows and their IDs in JSON format
+workflows_json=$(gh workflow list --json id,name --jq '.')
+
+# Check if any workflows were found
+if [ -z "$workflows_json" ]; then
+  echo "No workflows found in this repository."
+  exit 0
+fi
+
+# Loop through each workflow in the JSON array
+echo "$workflows_json" | jq -c '.[]' | while read -r workflow; do
+  workflow_id=$(echo "$workflow" | jq -r '.id')
+  workflow_name=$(echo "$workflow" | jq -r '.name')
+  
+  echo "Triggering workflow ID: $workflow_id ($workflow_name)"
+  
+  # The 'gh workflow run' command can accept either the ID or the filename/name.
+  # Using the ID is more reliable.
+  # Replace 'main' with your desired branch name if different
+  gh workflow run "$workflow_id" --ref main
+  
+  if [ $? -eq 0 ]; then
+    echo "Successfully triggered $workflow_name (ID: $workflow_id)"
+  else
+    echo "Failed to trigger $workflow_name (ID: $workflow_id)"
+  fi
+  echo "---"
+done
+
+echo "All eligible workflows have been processed."
