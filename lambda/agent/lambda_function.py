@@ -23,6 +23,7 @@ vector_db_name = os.getenv("VECTOR_DB", "ailumni-vector-db")
 vector_db_index = os.getenv("VECTOR_DB_INDEX", "ailumni-vector-index")
 embedding_model = os.getenv("EMBEDDING_MODEL", "amazon.titan-embed-text-v2:0")
 agent_model = os.getenv("AGENT_MODEL", "eu.amazon.nova-micro-v1:0")
+top_k = int(os.getenv("TOP_K", 8))
 
 s3vectors = boto3.client("s3vectors", region_name=aws_region)
 bedrock = boto3.client("bedrock-runtime", region_name=aws_region)
@@ -100,15 +101,17 @@ def lambda_handler(event, context):
                     "statusCode": 200,
                     "body": json.dumps({"message": "It seems like the retrieval failed. Try again by improving your query or adding documents to your set."}),
                 }
+            
+
             logger.info("Found %d relevant vectors", len(filtered_vectors))
             
-            res = agent(json.dumps(filtered_vectors))
+            res = agent()
 
             return {
                 "statusCode": 200,
                 "body": json.dumps(
                     {
-                        "message": str(res)
+                        "message": json.dumps(filtered_vectors, indent=2),
                     }
                 ),
             }
