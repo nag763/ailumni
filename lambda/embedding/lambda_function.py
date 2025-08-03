@@ -98,17 +98,15 @@ def lambda_handler(event, context):
             f"Indexed {len(vectors)} text chunks from {key} into vector database."
         )
         logger.info(f"Successfully indexed {key} and updated DynamoDB.")
-
-        # For each chunk, create a DynamoDB item with the chunk key and text
-        for i, text in enumerate(texts):
-            table.put_item(
-                Item={
-                    "user_sub": user_sub,
-                    "item_id": f"{key}#{i}",
-                    "text": text,
-                }
-            )
-            
+        # Update the current DynamoDB item with a 'vector' attribute containing [{item_id, text}, ...]
+        vector_entries = [{"item_id": f"{key}#{i}", "text": text} for i, text in enumerate(texts)]
+        table.update_item(
+            Key={"user_sub": user_sub, "item_id": item_id},
+            UpdateExpression="SET #vector = :vector_entries",
+            ExpressionAttributeNames={"#vector": "vector"},
+            ExpressionAttributeValues={":vector_entries": vector_entries},
+        )
+        
     except Exception as e:
         logger.error(f"Error during indexing for {key}: {e}")
         # Update DynamoDB item to indicate failed indexing
