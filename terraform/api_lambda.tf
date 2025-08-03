@@ -8,6 +8,7 @@ module "api_lambda" {
   environment_variables = {
     DYNAMODB_TABLE = aws_dynamodb_table.main.name
     S3_BUCKET_NAME = aws_s3_bucket.user_content.id
+    DYNAMODB_CHUNKS_TABLE = aws_dynamodb_table.chunks.name
   }
   tags = var.tags
 }
@@ -43,7 +44,10 @@ resource "aws_iam_policy" "api_lambda_additional_policy" {
           "dynamodb:GetItem"
         ]
         Effect   = "Allow"
-        Resource = aws_dynamodb_table.main.arn
+        Resource = [
+          aws_dynamodb_table.main.arn,
+          aws_dynamodb_table.chunks.arn
+        ]
       }
     ]
   })
