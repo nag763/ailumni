@@ -24,6 +24,7 @@ vector_db_index = os.getenv("VECTOR_DB_INDEX", "ailumni-vector-index")
 embedding_model = os.getenv("EMBEDDING_MODEL", "amazon.titan-embed-text-v2:0")
 agent_model = os.getenv("AGENT_MODEL", "eu.amazon.nova-micro-v1:0")
 top_k = int(os.getenv("TOP_K", 8))
+chunks_table_name = os.getenv("DYNAMODB_CHUNKS_TABLE")
 
 s3vectors = boto3.client("s3vectors", region_name=aws_region)
 bedrock = boto3.client("bedrock-runtime", region_name=aws_region)
@@ -31,12 +32,30 @@ bedrock = boto3.client("bedrock-runtime", region_name=aws_region)
 agent = Agent(
     model=agent_model,
     system_prompt="""
-    Your role is to assist users by providing helpful responses based on their input.
-    You will receive a message from the user, and you should respond with a message that will be augmented from vectors stored in a vector database.
-    The user input will be embedded when you will process it.
-    Reply given the relevant context.
+    Your role is to assist users by providing helpful responses using Retrieval-Augmented Generation (RAG).
+    You will receive a message from the user, and your response should leverage relevant information retrieved from a vector database.
+    The user's input will be embedded and matched against stored vectors to find the most pertinent context.
+    Use this retrieved context to generate accurate, helpful, and context-aware answers.
+    Always reply based on the relevant information provided, and clarify when insufficient context is available.
 """,
 )
+
+QUERY_TEMPLATE = """
+You are a helpful assistant. Your task is to answer the user's question based on the provided context
+and the user's query.
+
+Here is the user's question:
+{query}
+
+Retrieved vectors:
+
+```
+{vectors}
+```
+
+Provide an answer based on the retrieved context. Vectors with the highest relevance should be prioritized.
+If the context is insufficient to answer the question, please indicate that you need more information.
+"""
 
 
 def lambda_handler(event, context):
@@ -106,7 +125,6 @@ def lambda_handler(event, context):
             logger.info("Found %d relevant vectors", len(filtered_vectors))
             
             # Add here
-            chunks_table_name = os.getenv("DYNAMODB_CHUNKS_TABLE")
             dynamodb = boto3.resource("dynamodb", region_name=aws_region)
             chunks_table = dynamodb.Table(chunks_table_name)
 
@@ -122,15 +140,17 @@ def lambda_handler(event, context):
                             Key={"item_id": item_id, "chunk_key": chunk_key}
                         )
                         if "Item" in response:
-                            retrieved_texts.append(response["Item"].get("text"))
+                            retrieved_texts.append({"text" : response["Item"].get("text"), "distance": vector.get("distance", 0)})
                     except Exception as e:
                         logger.error(f"Error retrieving chunk from DynamoDB: {e}")
+
+            res = agent(QUERY_TEMPLATE.format(query=agent_message.message, vectors=json.dumps(retrieved_texts)))
 
             return {
                 "statusCode": 200,
                 "body": json.dumps(
                     {
-                        "message": json.dumps(retrieved_texts, indent=2),
+                        "message": str(res),
                     }
                 ),
             }
