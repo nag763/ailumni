@@ -105,7 +105,7 @@ def lambda_handler(event, context):
 
             logger.info("Found %d relevant vectors", len(filtered_vectors))
             
-            res = agent()
+            # res = agent()
 
             return {
                 "statusCode": 200,
