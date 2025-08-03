@@ -22,7 +22,7 @@ aws_region = os.getenv("AWS_REGION", "eu-central-1")
 vector_db_name = os.getenv("VECTOR_DB", "ailumni-vector-db")
 vector_db_index = os.getenv("VECTOR_DB_INDEX", "ailumni-vector-index")
 embedding_model = os.getenv("EMBEDDING_MODEL", "amazon.titan-embed-text-v2:0")
-agent_model = os.getenv("AGENT_MODEL", "eu.amazon.nova-micro-v1:0")
+agent_model = os.getenv("AGENT_MODEL", "eu.amazon.nova-pro-v1:0")
 top_k = int(os.getenv("TOP_K", 8))
 chunks_table_name = os.getenv("DYNAMODB_CHUNKS_TABLE")
 
