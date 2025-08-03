@@ -26,8 +26,10 @@ agent_model = os.getenv("AGENT_MODEL", "eu.amazon.nova-micro-v1:0")
 top_k = int(os.getenv("TOP_K", 8))
 chunks_table_name = os.getenv("DYNAMODB_CHUNKS_TABLE")
 
+dynamodb = boto3.resource("dynamodb", region_name=aws_region)
 s3vectors = boto3.client("s3vectors", region_name=aws_region)
 bedrock = boto3.client("bedrock-runtime", region_name=aws_region)
+chunks_table = dynamodb.Table(chunks_table_name)
 
 agent = Agent(
     model=agent_model,
@@ -111,7 +113,7 @@ def lambda_handler(event, context):
             )
             vectors = query["vectors"]
             filtered_vectors = [
-                vector for vector in vectors if vector.get("distance", 0) < 0.5
+                vector for vector in vectors if vector.get("distance", 0) < 0.75
             ]
             
             if not filtered_vectors:
@@ -125,8 +127,6 @@ def lambda_handler(event, context):
             logger.info("Found %d relevant vectors", len(filtered_vectors))
             
             # Add here
-            dynamodb = boto3.resource("dynamodb", region_name=aws_region)
-            chunks_table = dynamodb.Table(chunks_table_name)
 
             retrieved_texts = []
             for vector in filtered_vectors:
