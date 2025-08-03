@@ -105,13 +105,32 @@ def lambda_handler(event, context):
 
             logger.info("Found %d relevant vectors", len(filtered_vectors))
             
-            # res = agent()
+            # Add here
+            chunks_table_name = os.getenv("DYNAMODB_CHUNKS_TABLE")
+            dynamodb = boto3.resource("dynamodb", region_name=aws_region)
+            chunks_table = dynamodb.Table(chunks_table_name)
+
+            retrieved_texts = []
+            for vector in filtered_vectors:
+                metadata = vector.get("metadata", {})
+                item_id = metadata.get("item_id")
+                chunk_key = vector.get("key")
+
+                if item_id and chunk_key:
+                    try:
+                        response = chunks_table.get_item(
+                            Key={"item_id": item_id, "chunk_key": chunk_key}
+                        )
+                        if "Item" in response:
+                            retrieved_texts.append(response["Item"].get("text"))
+                    except Exception as e:
+                        logger.error(f"Error retrieving chunk from DynamoDB: {e}")
 
             return {
                 "statusCode": 200,
                 "body": json.dumps(
                     {
-                        "message": json.dumps(filtered_vectors, indent=2),
+                        "message": json.dumps(retrieved_texts, indent=2),
                     }
                 ),
             }

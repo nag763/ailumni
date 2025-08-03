@@ -7,6 +7,7 @@ module "agent_lambda" {
   filename      = "../lambda/agent/agent.zip"
   environment_variables = {
     CORS_ALLOW_ORIGIN = "*"
+    DYNAMODB_CHUNKS_TABLE = aws_dynamodb_table.chunks.name
   }
   tags = var.tags
 }
@@ -67,6 +68,13 @@ resource "aws_iam_policy" "agent_lambda_additional_policy" {
         Effect = "Allow"
         # This is intentionally left generic as terraform does not support S3 Vectors ARN atm.
         Resource = "arn:aws:s3vectors:${var.aws_region}:${data.aws_caller_identity.current.account_id}:bucket/${aws_s3_bucket.vector_db.id}/index/*"
+      },
+      {
+        Action = [
+          "dynamodb:GetItem"
+        ]
+        Effect   = "Allow"
+        Resource = aws_dynamodb_table.chunks.arn
       }
     ]
   })
