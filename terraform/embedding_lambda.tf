@@ -7,6 +7,7 @@ module "embedding_lambda" {
   filename      = "../lambda/embedding/embedding.zip"
   environment_variables = {
     DYNAMODB_TABLE = aws_dynamodb_table.main.name
+    DYNAMODB_CHUNKS_TABLE = aws_dynamodb_table.chunks.name
   }
   tags = var.tags
 }
@@ -38,7 +39,10 @@ resource "aws_iam_policy" "embedding_lambda_additional_policy" {
           "dynamodb:PutItem",
         ]
         Effect   = "Allow"
-        Resource = aws_dynamodb_table.main.arn
+        Resource = [
+          aws_dynamodb_table.main.arn,
+          aws_dynamodb_table.chunks.arn
+        ]
       },
       {
         Action = [
@@ -60,7 +64,10 @@ resource "aws_iam_policy" "embedding_lambda_additional_policy" {
           "dynamodb:UpdateItem"
         ]
         Effect   = "Allow"
-        Resource = aws_dynamodb_table.main.arn
+        Resource = [
+          aws_dynamodb_table.main.arn,
+          aws_dynamodb_table.chunks.arn
+        ]
       }
     ]
   })

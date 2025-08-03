@@ -4,11 +4,11 @@ import json
 import os
 import logging
 
-
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 aws_region = os.getenv("AWS_REGION", "eu-central-1")
 table_name = os.getenv("DYNAMODB_TABLE")
+chunks_table_name = os.getenv("DYNAMODB_CHUNKS_TABLE")
 vector_db_name = os.getenv("VECTOR_DB", "ailumni-vector-db")
 vector_db_index = os.getenv("VECTOR_DB_INDEX", "ailumni-vector-index")
 chunk_size = int(os.getenv("CHUNK_SIZE", 300))
@@ -46,6 +46,7 @@ def lambda_handler(event, context):
         return
 
     table = dynamodb.Table(table_name)
+    chunks_table = dynamodb.Table(chunks_table_name)
 
     try:
         texts = splitter.split_text(content)
@@ -81,11 +82,19 @@ def lambda_handler(event, context):
             )
             response_body = json.loads(response["body"].read())
             embedding = response_body["embedding"]
+            chunk_key = f"{key}#{i}"
             vectors.append(
                 {
-                    "key": f"{key}#{i}",
+                    "key": chunk_key,
                     "data": {"float32": embedding},
                     "metadata": {"user_sub": user_sub, "chunk_index": i, "item_id": item_id, "file_name": file_name},
+                }
+            )
+            chunks_table.put_item(
+                Item={
+                    "item_id": item_id,
+                    "chunk_key": chunk_key,
+                    "text": text,
                 }
             )
 
@@ -97,16 +106,18 @@ def lambda_handler(event, context):
         logger.info(
             f"Indexed {len(vectors)} text chunks from {key} into vector database."
         )
-        logger.info(f"Successfully indexed {key} and updated DynamoDB.")
-        # Update the current DynamoDB item with a 'vector' attribute containing [{item_id, text}, ...]
-        vector_entries = [{"item_id": f"{key}#{i}", "text": text} for i, text in enumerate(texts)]
         table.update_item(
             Key={"user_sub": user_sub, "item_id": item_id},
-            UpdateExpression="SET #vector = :vector_entries",
-            ExpressionAttributeNames={"#vector": "vector"},
-            ExpressionAttributeValues={":vector_entries": vector_entries},
+            UpdateExpression="SET #files.#file_name = :status",
+            ExpressionAttributeNames={
+                "#files": "files",
+                "#file_name": file_name,
+            },
+            ExpressionAttributeValues={
+                ":status": {"indexed": True}
+            },
         )
-        
+
     except Exception as e:
         logger.error(f"Error during indexing for {key}: {e}")
         # Update DynamoDB item to indicate failed indexing
