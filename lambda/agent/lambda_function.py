@@ -43,11 +43,12 @@ agent = Agent(
 )
 
 QUERY_TEMPLATE = """
-You are a helpful assistant. Your task is to answer the user's question based on the provided context
-and the user's query.
+You are a helpful assistant. Your task is to answer the user's question based on the provided context and the user's query.
 
 Here is the user's question:
+```
 {query}
+```
 
 Retrieved vectors:
 
@@ -56,7 +57,10 @@ Retrieved vectors:
 ```
 
 Provide an answer based on the retrieved context. Vectors with the highest relevance should be prioritized.
+Do not mention the vectors directly in your response, but use the information they contain to formulate your answer.
 If the context is insufficient to answer the question, please indicate that you need more information.
+
+Try to have your answer be concise and to the point, while still being informative. Try being helpful and friendly by using emojis.
 """
 
 
